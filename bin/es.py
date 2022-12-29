@@ -186,7 +186,9 @@ def main(argv):
 
     availableAlgos = (
         "OpenAI-ES",
+        "OpenAI-ES-NE",
         "SSS",
+        "SSSNE",
         "coevo2",
         "coevo",
     )  # check whether the user specified a valid algorithm
@@ -268,8 +270,12 @@ def main(argv):
             from openaiesp import Algo
         else:
             from openaies import Algo
+    elif algoname == "OpenAI-ES-NE":
+        from openaiesne import Algo
     elif algoname == "SSS":
         from sss import Algo
+    elif algoname == "SSSNE":
+        from sssne import Algo
     elif algoname == "coevo":
         from coevo import Algo
     elif algoname == "coevo2":

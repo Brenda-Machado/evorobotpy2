@@ -14,23 +14,23 @@ import time
 
 
 class EvoAlgo(object):
-    def __init__(self, env, policy, seed, fileini, filedir):
-        self.env = env  # the environment
-        self.policy = policy  # the policy
-        self.seed = seed  # the seed of the experiment
-        self.fileini = fileini  # the name of the file with the hyperparameters
-        self.filedir = filedir  # the directory used to save/load files
-        self.bestfit = -999999999.0  # the fitness of the best agent so far
-        self.bestsol = None  # the genotype of the best agent so far
-        self.bestgfit = (
-            -999999999.0
-        )  # the performance of the best post-evaluated agent so far
-        self.bestgsol = None  # the genotype of the best postevaluated agent so far
-        self.stat = np.arange(
-            0, dtype=np.float64
-        )  # a vector containing progress data across generations
-        self.avgfit = 0.0  # the average fitness of the population
-        self.last_save_time = time.time()  # the last time in which data have been saved
+    def __init__(self, env, policy, seed, fileini, filedir, icfeatures=[], statsfeatures=[]):
+        self.env = env                       # the environment
+        self.policy = policy                 # the policy
+        self.seed = seed                     # the seed of the experiment
+        self.fileini = fileini               # the name of the file with the hyperparameters
+        self.filedir = filedir               # the directory used to save/load files
+        self.bestfit = -999999999.0          # the fitness of the best agent so far
+        self.bestsol = None                  # the genotype of the best agent so far
+        self.bestgfit = -999999999.0         # the performance of the best post-evaluated agent so far
+        self.bestgsol = None                 # the genotype of the best postevaluated agent so far
+        self.stat = np.arange(0, dtype=np.float64) # a vector containing progress data across generations
+        self.avgfit = 0.0                    # the average fitness of the population
+        self.last_save_time = time.time()    # the last time in which data have been saved
+
+    @property
+    def __env_name(self):
+        return self.fileini.split('.')[0]
 
     def reset(self):
         self.bestfit = -999999999.0
@@ -97,7 +97,7 @@ class EvoAlgo(object):
                 self.bestgsol = np.append(ind, self.policy.normvector)
 
     def save(
-        self,
+        self, esne=False
     ):  # save the best agent so far, the best postevaluated agent so far, and the statistical data
         print("save data")
         fname = self.filedir + "/bestS" + str(self.seed)
@@ -106,3 +106,10 @@ class EvoAlgo(object):
         np.save(fname, self.bestgsol)
         fname = self.filedir + "/statS" + str(self.seed)
         np.save(fname, self.stat)
+
+    def save_best_stats(self):        # save the best agent so far, the best postevaluated agent so far
+        self.runstats.save_metric(self.bestsol, 'bestsol')
+        self.runstats.save_metric(self.bestgsol, 'bestgsol')
+
+    def save_test_stats(self, avg, steps):
+        self.runstats.save_test(avg, steps)
