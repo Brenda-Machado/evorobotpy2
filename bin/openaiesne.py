@@ -187,7 +187,6 @@ class Algo(EvoAlgo):
                 eval_rews, eval_length = self.policy.rollout(
                     self.policy.ntrials,
                     seed=self.niches[oniche],
-                    save_env = False,
                 )
                 self.samplefitness[b * 2 + bb] = eval_rews
                 self.steps += eval_length
@@ -331,7 +330,7 @@ class Algo(EvoAlgo):
                     fitMatrix[niche][miche] = self.avgfit
                 else:
                     fitMatrix[niche][miche] = -99999999
-
+                    
         for miche in range(self.number_niches):
             # biche = best niche in miche
             biche = np.argmax(fitMatrix[:][miche])
@@ -377,9 +376,9 @@ class Algo(EvoAlgo):
         for _ in range(num_random_niches):
             random_niches.append([random.randint(1, num_random_niches*10) for _ in range(self.policy.ntrials)])
 
-        self.niches = [0 for _ in range(self.numberNiches)]
+        self.niches = [0 for _ in range(self.number_niches)]
  
-        for niche in range(self.numberNiches): 
+        for niche in range(self.number_niches): 
             self.niches[niche] = random_niches[niche]
 
         remove_first_gen = 1

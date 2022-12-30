@@ -2,9 +2,12 @@ arrow
 black
 click
 cloudpickle
+contourpy
 cycler
 Cython
+fonttools
 gym
+gym-notices
 Jinja2
 jinja2-time
 kiwisolver
@@ -14,6 +17,12 @@ matplotlib
 mpi4py
 mypy-extensions
 numpy
+nvidia-cublas-cu11
+nvidia-cuda-nvrtc-cu11
+nvidia-cuda-runtime-cu11
+nvidia-cudnn-cu11
+pandas
+packaging
 pathspec
 Pillow
 platformdirs
@@ -22,7 +31,8 @@ pyglet
 pyparsing
 python-dateutil
 regex
+seaborn
 six
 tomli
 torch
-typing-extensions
+typing_extensions

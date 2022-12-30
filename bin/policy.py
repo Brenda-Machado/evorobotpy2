@@ -479,13 +479,7 @@ class ErPolicy(Policy):
     def rollout(self, ntrials, render=False, seed=None):
         rews = 0.0  # summed reward
         steps = 0  # steps performed
-        if seed is not None:
-            self.env.seed(
-                seed
-            )  # set the seed of the environment that impacts on the initialization of the robot/environment
-            self.nn.seed(
-                seed
-            )  # set the seed of evonet that impacts on the noise eventually added to the activation of the neurons
+
         if (
             self.test > 0
         ):  # if the policy is used to test a trained agent and to visualize the neurons, we need initialize the graphic render
@@ -493,7 +487,18 @@ class ErPolicy(Policy):
             self.objs[0] = -1
             self.env.copyDobj(self.objs)
             import renderWorld
+
         for trial in range(ntrials):
+            if seed is not None:
+                if not isinstance(seed, int):
+                    arg = int(seed[trial])
+                    self.env.seed(
+                        arg
+                    )  # set the seed of the environment that impacts on the initialization of the robot/environment
+                    self.nn.seed(
+                        arg
+                    )  # set the seed of evonet that impacts on the noise eventually added to the activation of the neurons
+
             self.env.reset()  # reset the environment at the beginning of a new episode
             self.nn.resetNet()  # reset the activation of the neurons (necessary for recurrent policies)
             rew = 0.0
@@ -510,9 +515,13 @@ class ErPolicy(Policy):
                     break
             if self.test > 0:
                 print("Trial %d Fit %.2f Steps %d " % (trial, rew, t))
+
             steps += t
             rews += rew
-        rews /= ntrials  # Normalize reward by the number of trials
-        if self.test > 0 and ntrials > 1:
-            print("Average Fit %.2f Steps %.2f " % (rews, steps / float(ntrials)))
+
+        rews /= ntrials                         # Normalize reward by the number of trials
+
+        if (self.test > 0 and ntrials > 1):
+            print("Average Fit %.2f Steps %.2f " % (rews, steps/float(ntrials)))
+
         return rews, steps

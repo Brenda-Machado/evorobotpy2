@@ -119,7 +119,6 @@ class Algo(EvoAlgo):
                 eval_rews, eval_length = self.policy.rollout(
                     self.policy.ntrials,
                     seed=(self.niches[niche]),
-                    save_env = False,
                 )  # evaluate the individual
             else:
                 # If normalize=1 we update the normalization vectors
@@ -208,7 +207,6 @@ class Algo(EvoAlgo):
         eval_rews, eval_length = self.policy.rollout(
             self.policy.ntrials,
             seed=(self.niches[bestg%self.number_niches]),
-            save_env = False,
         )  # evaluate the individual
         self.ceval += eval_length  # Update the number of evaluations
 
@@ -239,7 +237,6 @@ class Algo(EvoAlgo):
                     eval_rews, eval_length = self.policy.rollout(
                         self.policy.ntrials,
                         seed=(self.niches[miche]),
-                        save_env = False,
                     )  # evaluate the individual
                     fitMatrix[niche][miche] = eval_rews
                 else:
@@ -265,14 +262,14 @@ class Algo(EvoAlgo):
         self.loadhyperparameters()  # initialize hyperparameters
         start_time = time.time()  # start time
         nparams = self.policy.nparams  # number of parameters
-        ceval = 0  # current evaluation
-        cgen = 0  # current generation
-        rg = np.random.RandomState(
+        self.ceval = 0  # current evaluation
+        self.cgen = 0  # current generation
+        self.rg = np.random.RandomState(
             self.seed
         )  # create a random generator and initialize the seed
-        pop = rg.randn(self.popsize, nparams)  # population
+        self.pop = self.rg.randn(self.popsize, nparams)  # population
         self.niches = [[random.randint(1, self.number_niches*10**5) for _ in range(self.policy.ntrials)] for _ in range(self.number_niches)]
-        fitness = zeros(self.popsize)  # fitness
+        self.fitness = zeros(self.popsize)  # fitness
         self.stat = np.arange(
             0, dtype=np.float64
         )  # initialize vector containing performance across generations
@@ -283,7 +280,7 @@ class Algo(EvoAlgo):
 
         # initialze the population
         for i in range(self.popsize):
-            pop[i] = self.policy.get_trainable_flat()
+            self.pop[i] = self.policy.get_trainable_flat()
 
         print(
             "SSSNE: seed %d maxmsteps %d popSize %d noiseStdDev %lf nparams %d"
@@ -295,7 +292,7 @@ class Algo(EvoAlgo):
 
         self.evaluate(niche_flag=True)
 
-        while ceval < self.maxsteps:
+        while self.ceval < self.maxsteps:
 
             for gen in range(50):
                 self.evaluate()

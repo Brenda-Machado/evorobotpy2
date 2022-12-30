@@ -22,7 +22,7 @@ import subprocess
 import stat
 
 environment = None  # the problem
-algoname = "OpenAI-ES"  # evolutionary algorithm
+algoname = "SSSNE"  # evolutionary algorithm
 
 # Parse the [ADAPT] section of the configuration file
 def parseConfigFile(filename):
