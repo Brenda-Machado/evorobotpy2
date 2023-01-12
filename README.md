@@ -1,11 +1,11 @@
 # evorobotpy2
 ## Setup
 
-Firstly, if you are using Linux, install the following library:
+First, if you are using a Debian-based Linux, install the following packages:
 ```bash
-sudo apt-get install libgsl-dev libopenmpi-dev
+sudo apt-get install libgsl-dev libopenmpi-dev python3-virtualenv python3-dev python3-tk make g++
 ```
-After that, make shure to create a virtual environment in the root directory:
+After that, create a virtual environment in the root directory:
 ```bash
 virtualenv -p python3 venv
 source venv/bin/activate
@@ -24,7 +24,7 @@ And now we are good to go!
 
 ## Compiling
 
-Before running the models, you need to compile the resource that you'll use.
+Before running the models, you need to compile the resources that you'll use.
 The main resources available are: ErDiscrim, ErDpole, ErPredprey, ErStaybehind and Evonet.
 You can look for the compile command in your terminal by writing `make compile_` and then pressing `tab` to see all commands.
 You can find all of them in the `Makefile`, but here's a list:
