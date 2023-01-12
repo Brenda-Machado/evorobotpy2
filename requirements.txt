@@ -2,6 +2,7 @@ arrow
 black
 click
 cloudpickle
+cma
 contourpy
 cycler
 Cython
@@ -32,6 +33,11 @@ pyparsing
 python-dateutil
 regex
 seaborn
+seaborn
+swig
+box2d
+box2d-kengz
+pygame
 six
 tomli
 torch
