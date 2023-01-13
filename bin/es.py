@@ -22,7 +22,7 @@ import subprocess
 import stat
 
 environment = None  # the problem
-algoname = "SSSNE"  # evolutionary algorithm
+algoname = "CMA-ES"  # evolutionary algorithm
 
 # Parse the [ADAPT] section of the configuration file
 def parseConfigFile(filename):
@@ -191,6 +191,9 @@ def main(argv):
         "SSSNE",
         "coevo2",
         "coevo",
+        "CMA-ES",
+        "NES",
+        "std-ES"
     )  # check whether the user specified a valid algorithm
     if algoname not in availableAlgos:
         print("\033[1mAlgorithm %s is unknown\033[0m" % algoname)
@@ -280,6 +283,12 @@ def main(argv):
         from coevo import Algo
     elif algoname == "coevo2":
         from coevo2 import Algo
+    elif algoname == "std-ES":
+        from std_es import Algo
+    elif algoname == "CMA-ES":
+        from cma_es import Algo
+    elif algoname == "NES":
+        from nes import Algo
 
     algo = Algo(env, policy, args.seed, args.fileini, args.folder)
 
