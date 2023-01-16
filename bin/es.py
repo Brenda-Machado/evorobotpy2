@@ -286,7 +286,7 @@ def main(argv):
     elif algoname == "std-ES":
         from std_es import Algo
     elif algoname == "CMA-ES":
-        from cma_es import Algo
+        from cma_es2 import Algo
     elif algoname == "NES":
         from nes import Algo
 
