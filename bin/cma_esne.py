@@ -162,6 +162,37 @@ class Algo(EvoAlgo):
             gfit /= self.policy.nttrials
             self.updateBestg(gfit, self.bestsol)
 
+    def interniche(self): 
+        self.colonized = [False for _ in range(self.number_niches**2)]
+        fitMatrix = np.zeros(shape=(self.number_niches, self.number_niches))
+
+        for niche in range(self.number_niches):
+            for miche in range(self.number_niches):
+                if miche != niche:
+                    # Evaluate center of niche n in niche m
+                    self.evaluate(niche, miche)
+                    fitMatrix[niche][miche] = self.avgfit
+                else:
+                    fitMatrix[niche][miche] = -99999999
+                    
+        for miche in range(self.number_niches):
+            # biche = best niche in miche
+            biche = np.argmax(fitMatrix[:][miche])
+            maxFit = fitMatrix[biche][miche]
+            if maxFit > self.fitness[miche]:
+                biche = np.argmax(fitMatrix[:][miche])
+                print("Niche", biche+1, "colonized niche", miche+1)
+                self.colonizer[miche] = biche
+
+                for i in range(self.number_niches):
+                    fitMatrix[i][biche] = -99999999
+                    fitMatrix[miche][i] = -99999999
+
+                # Replace i with o in niche m
+                self.fitness[miche] = maxFit
+                # Replace center of niche m with center of niche j
+                self.centers[miche] = self.centers[biche]
+
     def run(self):
 
         self.setProcess()  # initialize class variables
@@ -198,6 +229,7 @@ class Algo(EvoAlgo):
         while self.steps < self.maxsteps:
 
             self.cma_es.optimize(self.evaluate)
+            self.interniche()
             self.result_pretty()
             self.pos_evaluate()
 
