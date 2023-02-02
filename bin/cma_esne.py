@@ -94,6 +94,16 @@ class Algo(EvoAlgo):
         self.cma_es = cma.CMAEvolutionStrategy(self.center, self.noiseStdDev) # CMA-ES initialization
         self.number_niches = 10
         self.fitness = [-9999 for _ in range(self.number_niches)]
+        self.inormepisodes = (
+            self.policy.ntrials / 100.0
+        )  # number of normalization episode for generation (1% of generation episodes)
+        self.tnormepisodes = (
+            0.0  # total epsidoes in which normalization data should be collected so far
+        )
+        self.normepisodes = 0  # numer of episodes in which normalization data has been actually collected so far
+        self.normalizationdatacollected = (
+            False  # whether we collected data for updating the normalization vector
+        )
 
     def savedata(self):
         self.save()  # save the best agent so far, the best postevaluated agent so far, and progress data across generations
@@ -115,11 +125,11 @@ class Algo(EvoAlgo):
         fp.close()
 
     def evaluate(self, candidate, oniche=None):
-        oniche_flag = true
+        oniche_flag = True
         self.niche = self.niche % self.number_niches
         if oniche is None:
             oniche = self.niche
-            oniche_flag = false
+            oniche_flag = False
         self.policy.set_trainable_flat(candidate)
         self.policy.nn.normphase(
             0
@@ -132,7 +142,7 @@ class Algo(EvoAlgo):
         if eval_rews > self.bestestfit[0]:
             self.bestestfit = (eval_rews, candidate)
             # print(eval_rews)
-        if eval_rews > self.fitness[self.niche] and !oniche_flag:
+        if eval_rews > self.fitness[self.niche] and oniche_flag == False:
             self.fitness[self.niche] = eval_rews
         self.niche += 1
 
@@ -143,13 +153,13 @@ class Algo(EvoAlgo):
         if self.niche == 0:
             self.cgen += 1
 
+        # Pos-evaluate
+        self.pos_evaluate()
+
         # Interniche each 50 generations
         if self.cgen % 50 == 0:
             self.interniche()
         
-        # Pos-evaluate
-        self.pos_evaluate()
-
         return (1000 - eval_rews)
 
     def pos_evaluate(self):
@@ -157,7 +167,7 @@ class Algo(EvoAlgo):
         self.fitness_eval = []
 
         self.updateBest(
-            self.bestestfit
+            self.bestestfit[0], self.bestestfit[1]
         )  # Stored if it is the best obtained so far
 
         # postevaluate best sample of the last generation
@@ -254,10 +264,8 @@ class Algo(EvoAlgo):
         while self.steps < self.maxsteps:
 
             self.cma_es.optimize(self.evaluate)
-            self.interniche()
             self.result_pretty()
             
-
             self.stat = np.append(
                 self.stat,
                 [
