@@ -94,6 +94,7 @@ class Algo(EvoAlgo):
         self.cma_es = cma.CMAEvolutionStrategy(self.center, self.noiseStdDev) # CMA-ES initialization
         self.number_niches = 10
         self.fitness = [-9999 for _ in range(self.number_niches)]
+        self.candidates = [0 for _ in range(self.number_niches)]
         self.inormepisodes = (
             self.policy.ntrials / 100.0
         )  # number of normalization episode for generation (1% of generation episodes)
@@ -144,6 +145,7 @@ class Algo(EvoAlgo):
             # print(eval_rews)
         if eval_rews > self.fitness[self.niche] and oniche_flag == False:
             self.fitness[self.niche] = eval_rews
+            self.candidates[self.niche] = candidate
         self.niche += 1
 
         print(self.niche)
@@ -155,10 +157,6 @@ class Algo(EvoAlgo):
 
         # Pos-evaluate
         self.pos_evaluate()
-
-        # Interniche each 50 generations
-        if self.cgen % 50 == 0:
-            self.interniche()
         
         return (1000 - eval_rews)
 
@@ -203,7 +201,7 @@ class Algo(EvoAlgo):
             for miche in range(self.number_niches):
                 if miche != niche:
                     # Evaluate center of niche n in niche m
-                    self.evaluate(niche, miche)
+                    self.evaluate(self.candidates[niche], miche)
                     fitMatrix[niche][miche] = self.avgfit
                 else:
                     fitMatrix[niche][miche] = -99999999
@@ -224,7 +222,7 @@ class Algo(EvoAlgo):
                 # Replace i with o in niche m
                 self.fitness[miche] = maxFit
                 # Replace center of niche m with center of niche j
-                self.centers[miche] = self.centers[biche]
+                self.candidates[miche] = self.candidates[biche]
         print('FUNCIONA')
 
     def run(self):
@@ -264,7 +262,12 @@ class Algo(EvoAlgo):
         while self.steps < self.maxsteps:
 
             self.cma_es.optimize(self.evaluate)
+            
             self.result_pretty()
+            
+            # Interniche each 50 generations
+            if self.cgen % 50 == 0:
+               self.interniche()
             
             self.stat = np.append(
                 self.stat,
