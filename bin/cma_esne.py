@@ -114,7 +114,7 @@ class Algo(EvoAlgo):
         )
         fp.close()
 
-    def evaluate(self, candidate, oniche):
+    def evaluate(self, candidate, oniche=None):
         oniche_flag = true
         self.niche = self.niche % self.number_niches
         if oniche is None:
