@@ -114,21 +114,25 @@ class Algo(EvoAlgo):
         )
         fp.close()
 
-    def evaluate(self, candidate):
+    def evaluate(self, candidate, oniche):
+        oniche_flag = true
         self.niche = self.niche % self.number_niches
+        if oniche is None:
+            oniche = self.niche
+            oniche_flag = false
         self.policy.set_trainable_flat(candidate)
         self.policy.nn.normphase(
             0
         )  # normalization data is collected during the post-evaluation of the best sample of he previous generation
         eval_rews, eval_length = self.policy.rollout(
             self.policy.ntrials,
-            seed= self.niches[self.niche]
+            seed= self.niches[oniche]
         )
         self.steps += eval_length
         if eval_rews > self.bestestfit[0]:
             self.bestestfit = (eval_rews, candidate)
             # print(eval_rews)
-        if eval_rews > self.fitness[self.niche]:
+        if eval_rews > self.fitness[self.niche] and !oniche_flag:
             self.fitness[self.niche] = eval_rews
         self.niche += 1
 
