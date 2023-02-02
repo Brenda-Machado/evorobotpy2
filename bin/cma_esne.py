@@ -127,11 +127,25 @@ class Algo(EvoAlgo):
         self.steps += eval_length
         if eval_rews > self.bestestfit[0]:
             self.bestestfit = (eval_rews, candidate)
-            print(eval_rews)
+            # print(eval_rews)
         if eval_rews > self.fitness[self.niche]:
             self.fitness[self.niche] = eval_rews
         self.niche += 1
+
+        print(self.niche)
+        
         self.fitness_eval.append(eval_rews)
+
+        if self.niche == 0:
+            self.cgen += 1
+
+        # Interniche each 50 generations
+        if self.cgen % 50 == 0:
+            self.interniche()
+        
+        # Pos-evaluate
+        self.pos_evaluate()
+
         return (1000 - eval_rews)
 
     def pos_evaluate(self):
@@ -165,6 +179,7 @@ class Algo(EvoAlgo):
                 self.steps += eval_length
             gfit /= self.policy.nttrials
             self.updateBestg(gfit, self.bestsol)
+        print("BESTSOL", self.bestsol)
 
     def interniche(self): 
         self.colonized = [False for _ in range(self.number_niches**2)]
@@ -196,6 +211,7 @@ class Algo(EvoAlgo):
                 self.fitness[miche] = maxFit
                 # Replace center of niche m with center of niche j
                 self.centers[miche] = self.centers[biche]
+        print('FUNCIONA')
 
     def run(self):
 
@@ -204,6 +220,7 @@ class Algo(EvoAlgo):
         last_save_time = start_time
         elapsed = 0
         self.steps = 0
+        self.cgen = 0
         print(
             "Salimans: seed %d maxmsteps %d  noiseStdDev %lf symseed %d nparams %d"
             % (
@@ -235,7 +252,7 @@ class Algo(EvoAlgo):
             self.cma_es.optimize(self.evaluate)
             self.interniche()
             self.result_pretty()
-            self.pos_evaluate()
+            
 
             self.stat = np.append(
                 self.stat,
