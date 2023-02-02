@@ -93,6 +93,7 @@ class Algo(EvoAlgo):
         )
         self.cma_es = cma.CMAEvolutionStrategy(self.center, self.noiseStdDev) # CMA-ES initialization
         self.number_niches = 10
+        self.fitness = [-9999 for _ in range(self.number_niches)]
 
     def savedata(self):
         self.save()  # save the best agent so far, the best postevaluated agent so far, and progress data across generations
@@ -127,12 +128,15 @@ class Algo(EvoAlgo):
         if eval_rews > self.bestestfit[0]:
             self.bestestfit = (eval_rews, candidate)
             print(eval_rews)
+        if eval_rews > self.fitness[self.niche]:
+            self.fitness[self.niche] = eval_rews
         self.niche += 1
         self.fitness_eval.append(eval_rews)
         return (1000 - eval_rews)
 
     def pos_evaluate(self):
         self.avgfit = np.average(self.fitness_eval)  # compute the average fitness
+        self.fitness_eval = []
 
         self.updateBest(
             self.bestestfit
