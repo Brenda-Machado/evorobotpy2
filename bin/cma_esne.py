@@ -94,6 +94,8 @@ class Algo(EvoAlgo):
         self.cma_es = cma.CMAEvolutionStrategy(self.center, self.noiseStdDev) # CMA-ES initialization
         self.number_niches = 25
         self.fitness = [-9999 for _ in range(self.number_niches)]
+        self.colonizer = [np.nan for _ in range(self.numberNiches)]
+        self.avecenters = np.zeros(self.numberNiches)
         self.candidates = [0 for _ in range(self.number_niches)]
         self.gfitness = [-9999 for _ in range(self.number_niches)]
         self.gcandidates = [0 for _ in range(self.number_niches)]
@@ -232,7 +234,7 @@ class Algo(EvoAlgo):
             
             if maxFit > self.fitness[miche]:
                 print("Niche", biche+1, "colonized niche", miche+1)
-                self.colonized[miche] = biche
+                self.colonizer[miche] = biche
 
                 for i in range(self.number_niches):
                     fitMatrix[biche][i] = -99999999
