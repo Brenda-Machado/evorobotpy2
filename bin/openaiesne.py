@@ -138,6 +138,9 @@ class Algo(EvoAlgo):
         self.normalizationdatacollected = (
             False  # whether we collected data for updating the normalization vector
         )
+        for niche in range(self.numberNiches):
+            self.phyloy[niche+self.numberNiches*niche][0] = niche+1
+            self.phyloy[niche+self.numberNiches*niche][1] = niche+1
 
     def savedata(self):
         self.save(esne=True)  # save the best agent so far, the best postevaluated agent so far, and progress data across generations
@@ -348,6 +351,28 @@ class Algo(EvoAlgo):
                 self.fitness[miche] = maxFit
                 # Replace center of niche m with center of niche j
                 self.centers[miche] = self.centers[biche]
+
+    def phylogenetic(self, biche, miche):
+        # if the best niche was already colonized, then its colonizer will be represented instead
+        if np.isnan(self.colonizer[biche]):
+            colonizer = biche
+        else:
+            colonizer = self.colonizer[biche]
+        colonized_old_colonizer = self.colonizer[miche]
+        new_colonization_graph = miche+self.numberNiches*colonizer
+        cgen = self.cgen//self.nGens
+        self.phyloy[new_colonization_graph][cgen] = colonizer+1
+        self.phyloy[new_colonization_graph][cgen+1] = miche+1
+        self.phyloy[colonized_old_colonizer][cgen+1] = miche+1
+        for graph in range(0, self.numberNiches**2, miche):
+            self.colonized[miche] = True
+
+    
+    def phylogenetic_end(self):
+        cgen = self.cgen//self.nGens
+        for graph in range(self.numberNiches**2):
+            if not self.colonized[graph]:
+                self.phyloy[graph][cgen+1] = self.phyloy[graph][cgen]
 
     def run(self):
 

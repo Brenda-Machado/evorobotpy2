@@ -106,6 +106,8 @@ class EvoAlgo(object):
         np.save(fname, self.bestgsol)
         fname = self.filedir + "/statS" + str(self.seed)
         np.save(fname, self.stat)
+        fname = self.filedir + "/phyloS" + str(self.seed)
+        np.save(fname, self.phyloy)
 
     def save_best_stats(self):        # save the best agent so far, the best postevaluated agent so far
         self.runstats.save_metric(self.bestsol, 'bestsol')
