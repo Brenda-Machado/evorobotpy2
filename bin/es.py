@@ -192,6 +192,7 @@ def main(argv):
         "coevo2",
         "coevo",
         "CMA-ES",
+        "CMA-ES-NE",
         "NES",
         "std-ES"
     )  # check whether the user specified a valid algorithm
@@ -287,6 +288,8 @@ def main(argv):
         from std_es import Algo
     elif algoname == "CMA-ES":
         from cma_es import Algo
+    elif algoname == "CMA-ES-NE":
+        from cma_esne import Algo
     elif algoname == "NES":
         from nes import Algo
 

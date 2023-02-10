@@ -44,7 +44,7 @@ class Algo(EvoAlgo):
             self.wdecay = 0
             self.symseed = 1
             self.saveeach = 60
-            self.number_niches = 5
+            self.number_niches = 10
             options = config.options("ALGO")
             for o in options:
                 found = 0
@@ -107,7 +107,7 @@ class Algo(EvoAlgo):
     def setProcess(self):
         self.loadhyperparameters()  # load hyperparameters
         self.avecenter = None
-        self.nGens = 50             # number of generations until migration occurs
+        self.nGens = 50            # number of generations until migration occurs
         self.bniche = None    
         self.colonizer = [np.nan for _ in range(self.number_niches)]
         self.fitness = np.zeros(self.number_niches)
@@ -129,7 +129,7 @@ class Algo(EvoAlgo):
         )
         self.rs = None  # random number generator
         self.inormepisodes = (
-            self.batchSize * 2 * self.policy.ntrials / 100.0
+            self.number_niches * self.batchSize * 2 * self.policy.ntrials / 100.0
         )  # number of normalization episode for generation (1% of generation episodes)
         self.tnormepisodes = (
             0.0  # total epsidoes in which normalization data should be collected so far
@@ -193,8 +193,7 @@ class Algo(EvoAlgo):
 
         fitness, self.index = ascendent_sort(self.samplefitness)  # sort the fitness
         self.avgfit = np.average(fitness)  # compute the average fitness
-        if oniche_flag:
-            self.fitness[oniche] = self.avgfit
+        
 
         self.bfit = fitness[(self.batchSize * 2) - 1]
         bidx = self.index[(self.batchSize * 2) - 1]
@@ -232,7 +231,10 @@ class Algo(EvoAlgo):
                 self.steps += eval_length
             gfit /= self.policy.nttrials
             self.updateBestg(gfit, self.bestsol)
-        
+            if gfit > self.fitness[oniche] and not oniche_flag:
+                self.fitness[oniche] = gfit
+        return gfit
+
     def optimize(self, niche):
         popsize = self.batchSize * 2  # compute a vector of utilities [-0.5,0.5]
         utilities = zeros(popsize)
@@ -326,23 +328,22 @@ class Algo(EvoAlgo):
             for miche in range(self.number_niches):
                 if miche != niche:
                     # Evaluate center of niche n in niche m
-                    self.evaluate(niche, miche)
-                    fitMatrix[niche][miche] = self.avgfit
+                    fitMatrix[niche][miche] = self.evaluate(niche, miche)
                 else:
                     fitMatrix[niche][miche] = -99999999
-                    
+
         for miche in range(self.number_niches):
             # biche = best niche in miche
-            biche = np.argmax(fitMatrix[:][miche])
+            biche = np.argmax([fitMatrix[j][miche] for j in range(self.number_niches)])
             maxFit = fitMatrix[biche][miche]
+
+            
             if maxFit > self.fitness[miche]:
-                biche = np.argmax(fitMatrix[:][miche])
                 print("Niche", biche+1, "colonized niche", miche+1)
-                self.colonizer[miche] = biche
+                self.colonized[miche] = biche
 
                 for i in range(self.number_niches):
-                    fitMatrix[i][biche] = -99999999
-                    fitMatrix[miche][i] = -99999999
+                    fitMatrix[biche][i] = -99999999
 
                 # Replace i with o in niche m
                 self.fitness[miche] = maxFit

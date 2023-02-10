@@ -91,17 +91,6 @@ class Algo(EvoAlgo):
             0  # the postevaluation fitness of the best sample of last generation
         )
         self.cma_es = cma.CMAEvolutionStrategy(self.center, self.noiseStdDev) # CMA-ES initialization
-        self.avecenter = 0
-        self.inormepisodes = (
-            self.policy.ntrials / 100.0
-        )  # number of normalization episode for generation (1% of generation episodes)
-        self.tnormepisodes = (
-            0.0  # total epsidoes in which normalization data should be collected so far
-        )
-        self.normepisodes = 0  # numer of episodes in which normalization data has been actually collected so far
-        self.normalizationdatacollected = (
-            False  # whether we collected data for updating the normalization vector
-        )
 
     def savedata(self):
         self.save()  # save the best agent so far, the best postevaluated agent so far, and progress data across generations
@@ -133,56 +122,10 @@ class Algo(EvoAlgo):
             seed= self.seed
         )
         self.steps += eval_length
-        if eval_rews > self.bestestfit[0]:
-            self.bestestfit = (eval_rews, candidate)
-            # print(eval_rews)
-
-        self.fitness_eval.append(eval_rews)
-
-        self.stat = np.append(
-                self.stat,
-                [
-                    self.steps,
-                    self.bestfit,
-                    self.bestgfit,
-                    self.bfit,
-                    self.avgfit,
-                    self.avecenter,
-                ],
-            )  # store performance across generations
-            
-        return (1000 - eval_rews)
-    
-    def pos_evaluate(self):
-        self.avgfit = np.average(self.fitness_eval)  # compute the average fitness
-
-        self.updateBest(
-            self.bestestfit
-        )  # Stored if it is the best obtained so far
-
-        # postevaluate best sample of the last generation
-        # in openaiesp.py this is done the next generation, move this section before the section "evaluate samples" to produce identical results
-        gfit = 0
-        if self.bestsol is not None:
-            self.policy.set_trainable_flat(self.bestsol)
-            self.tnormepisodes += self.inormepisodes
-            for t in range(self.policy.nttrials):
-                if (
-                    self.policy.normalize == 1
-                    and self.normepisodes < self.tnormepisodes
-                ):
-                    self.policy.nn.normphase(1)
-                    self.normepisodes += 1  # we collect normalization data
-                    self.normalizationdatacollected = True
-                else:
-                    self.policy.nn.normphase(0)
-                eval_rews, eval_length = self.policy.rollout(
-                    1, seed=(self.seed + 100000 + t)
-                )
-                gfit += eval_rews
-                self.steps += eval_length
-            gfit /= self.policy.nttrials
-            self.updateBestg(gfit, self.bestsol)
+        if eval_rews> self.bestestfit:
+            self.bestestfit = eval_rews
+            print(eval_rews)
+        return -eval_rews
 
     def run(self):
 
@@ -201,12 +144,24 @@ class Algo(EvoAlgo):
                 self.nparams,
             )
         )
-        self.bestestfit = (-99999999, None)
-        self.fitness_eval = []
-
+        self.bestestfit = float('-inf')
         while self.steps < self.maxsteps:
 
-            self.cma_es.optimize(self.evaluate, maxfun=50)
+            self.cma_es.optimize(self.evaluate)
+            self.result_pretty()
+            
+
+            self.stat = np.append(
+                self.stat,
+                [
+                    self.steps,
+                    self.bestfit,
+                    self.bestgfit,
+                    self.bfit,
+                    self.avgfit,
+                    self.avecenter,
+                ],
+            )  # store performance across generations
 
             if (time.time() - last_save_time) > (self.saveeach * 60):
                 self.savedata()  # save data on files
