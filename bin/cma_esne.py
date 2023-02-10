@@ -190,6 +190,19 @@ class Algo(EvoAlgo):
                 if gfit == max(self.fitness):
                     print(max(self.fitness), self.cgen)
         
+        self.stat = np.append(
+            self.stat,
+            [
+                self.steps,
+                self.bestfit,
+                self.bestgfit,
+                self.bfit,
+                self.avgfit,
+                self.avecenter,
+            ],
+        )  # store performance across generations
+
+        
         return 1000-eval_rews
 
     def eval(self, candidate, oniche=None):
@@ -278,20 +291,8 @@ class Algo(EvoAlgo):
 
         self.niche = 0
         while self.steps < self.maxsteps:
-            self.cma_es.optimize(self.evaluate)
+            self.cma_es.optimize(self.evaluate, maxfun=50)
             
-        self.stat = np.append(
-            self.stat,
-            [
-                self.steps,
-                self.bestfit,
-                self.bestgfit,
-                self.bfit,
-                self.avgfit,
-                self.avecenter,
-            ],
-        )  # store performance across generations
-
         if (time.time() - last_save_time) > (self.saveeach * 60):
             self.savedata()  # save data on files
             last_save_time = time.time()

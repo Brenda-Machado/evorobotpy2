@@ -91,6 +91,17 @@ class Algo(EvoAlgo):
             0  # the postevaluation fitness of the best sample of last generation
         )
         self.cma_es = cma.CMAEvolutionStrategy(self.center, self.noiseStdDev) # CMA-ES initialization
+        self.avecenter = 0
+        self.inormepisodes = (
+            self.policy.ntrials / 100.0
+        )  # number of normalization episode for generation (1% of generation episodes)
+        self.tnormepisodes = (
+            0.0  # total epsidoes in which normalization data should be collected so far
+        )
+        self.normepisodes = 0  # numer of episodes in which normalization data has been actually collected so far
+        self.normalizationdatacollected = (
+            False  # whether we collected data for updating the normalization vector
+        )
 
     def savedata(self):
         self.save()  # save the best agent so far, the best postevaluated agent so far, and progress data across generations
@@ -124,9 +135,22 @@ class Algo(EvoAlgo):
         self.steps += eval_length
         if eval_rews > self.bestestfit[0]:
             self.bestestfit = (eval_rews, candidate)
-            print(eval_rews)
+            # print(eval_rews)
 
         self.fitness_eval.append(eval_rews)
+
+        self.stat = np.append(
+                self.stat,
+                [
+                    self.steps,
+                    self.bestfit,
+                    self.bestgfit,
+                    self.bfit,
+                    self.avgfit,
+                    self.avecenter,
+                ],
+            )  # store performance across generations
+            
         return (1000 - eval_rews)
     
     def pos_evaluate(self):
@@ -182,21 +206,7 @@ class Algo(EvoAlgo):
 
         while self.steps < self.maxsteps:
 
-            self.cma_es.optimize(self.evaluate)
-            self.result_pretty()
-            self.pos_evaluate()
-
-            self.stat = np.append(
-                self.stat,
-                [
-                    self.steps,
-                    self.bestfit,
-                    self.bestgfit,
-                    self.bfit,
-                    self.avgfit,
-                    self.avecenter,
-                ],
-            )  # store performance across generations
+            self.cma_es.optimize(self.evaluate, maxfun=50)
 
             if (time.time() - last_save_time) > (self.saveeach * 60):
                 self.savedata()  # save data on files
