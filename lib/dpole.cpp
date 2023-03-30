@@ -185,7 +185,7 @@ void Problem::initEnvironment()
     stateRanges[5] = stateRanges[3];
 	m_length_2 = 0.25;
 	m_masspole_2 = 0.05;
-    printf("Double-pole: pole_length_2 %.2f pole_mass_2 %.2f\n", m_length_2 * 2.0, m_masspole_2 * 2.0);
+    // printf("Double-pole: pole_length_2 %.2f pole_mass_2 %.2f\n", m_length_2 * 2.0, m_masspole_2 * 2.0);
 }
 
 void Problem::getObs()

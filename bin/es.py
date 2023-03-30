@@ -22,7 +22,7 @@ import subprocess
 import stat
 
 environment = None  # the problem
-algoname = "CMA-ES"  # evolutionary algorithm
+algoname = "OpenAI-ES-NE"  # evolutionary algorithm
 
 # Parse the [ADAPT] section of the configuration file
 def parseConfigFile(filename):
@@ -89,7 +89,7 @@ def helper():
     print("nrobots [integer]         : number of robots (default 1)")
     print("heterogeneous [integer]   : whether robots are heterogeneous (default 0)")
     print("episodes [integer]        : number of evaluation episodes (default 1)")
-    print("pepisodes [integer]       : number of post-evaluation episodes (default 0)")
+    print("ppisodes [integer]       : number of post-evaluation episodes (default 0)")
     print(
         "maxsteps [integer]        : number of evaluation steps [for EREnvs only] (default 1000)"
     )
@@ -219,10 +219,10 @@ def main(argv):
             sys.exit(-1)
         print("process", rank, "out of total ", comm.Get_size(), "started")
 
-    print(
-        "Experiment: Environment %s Algo %s nreplications %d "
-        % (environment, algoname, args.nreplications)
-    )
+    # print(
+    #     "Experiment: Environment %s Algo %s nreplications %d "
+    #     % (environment, algoname, args.nreplications)
+    # )
 
     if (
         "Er" in environment
@@ -230,8 +230,8 @@ def main(argv):
         ErProblem = __import__(environment)
         env = ErProblem.PyErProblem()
         from policy import ErPolicy
-
         policy = ErPolicy(env, args.fileini, args.seed, test)
+        
     elif "Bullet" in environment:  # Pybullet environment
         import gym
         from gym import spaces
@@ -305,10 +305,10 @@ def main(argv):
     else:
         # run evolution
         if args.seed != 0:
-            print(
-                "Run Evolve: Environment %s Seed %d Nreplications %d"
-                % (environment, args.seed, args.nreplications)
-            )
+            # print(
+            #     "Run Evolve: Environment %s Seed %d Nreplications %d"
+            #     % (environment, args.seed, args.nreplications)
+            # )
             for r in range(args.nreplications):
                 algo.run()
                 algo.seed += 1

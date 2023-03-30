@@ -54,17 +54,17 @@ class Policy(object):
         # Read configuration file
         self.readConfig()
         # Display info
-        print(
-            "Policy: episodes %d postevaluation episodes %d maxsteps %d input normalization %d nrobots %d heterogeneous %d"
-            % (
-                self.ntrials,
-                self.nttrials,
-                self.maxsteps,
-                self.normalize,
-                self.nrobots,
-                self.heterogeneous,
-            )
-        )
+        # print(
+        #     "Policy: episodes %d postevaluation episodes %d maxsteps %d input normalization %d nrobots %d heterogeneous %d"
+        #     % (
+        #         self.ntrials,
+        #         self.nttrials,
+        #         self.maxsteps,
+        #         self.normalize,
+        #         self.nrobots,
+        #         self.heterogeneous,
+        #     )
+        # )
         self.ob = np.arange(
             self.ninputs * self.nrobots, dtype=np.float32
         )  # allocate observation vector
@@ -190,8 +190,8 @@ class Policy(object):
             if o == "episodes":
                 self.ntrials = config.getint("POLICY", "episodes")
                 found = 1
-            if o == "pepisodes":
-                self.nttrials = config.getint("POLICY", "pepisodes")
+            if o == "ppisodes":
+                self.nttrials = config.getint("POLICY", "ppisodes")
                 found = 1
             if o == "maxsteps":
                 self.maxsteps = config.getint("POLICY", "maxsteps")

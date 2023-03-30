@@ -214,95 +214,102 @@ Evonet::Evonet(int nnetworks, int heterogeneous, int ninputs, int nhiddens, int 
   netRng = new RandomGenerator(time(NULL));
 
   // display info and check parameters are in range
-  printf("Network %d->", m_ninputs);
+  // printf("Network %d->", m_ninputs);
   int l;
   if (m_nhiddens2 == 0 || m_nlayers != 2)
     {
     for(l=0; l < m_nlayers; l++)
-      printf("%d->", m_nhiddens / m_nlayers);
+      {}
+      //printf("%d->", m_nhiddens / m_nlayers);
     }
     else
     {
-      printf("%d->", m_nhiddens - m_nhiddens2);
-      printf("%d->", m_nhiddens2);
+      {}
+      //printf("%d->", m_nhiddens - m_nhiddens2);
+      //printf("%d->", m_nhiddens2);
     }
-  printf("%d ", m_noutputs);
+  //printf("%d ", m_noutputs);
   if (m_netType == 0)
-    printf("feedforward ");
+    {}
+    //printf("feedforward ");
   else if (m_netType == 1)
-    printf("recurrent ");
+    {}
+    //printf("recurrent ");
   else if (m_netType == 2)
-    printf("fully recurrent ");
+    {}
+    //printf("fully recurrent ");
   else if (m_netType == 3)
-    printf("LSTM ");
+  {}
+    //printf("LSTM ");
   if (m_bias)
-    printf("with bias ");
+  {}
+    //printf("with bias ");
   switch (m_actFunct)
     {
       case 1:
-        printf("logistic ");
+        //printf("logistic ");
         break;
       case 2:
-        printf("tanh ");
+        //printf("tanh ");
         break;
       case 3:
-        printf("linear ");
+        //printf("linear ");
         break;
       case 4:
-        printf("binary ");
+        //printf("binary ");
         break;
     }
   switch (m_outType)
     {
        case 1:
-         printf("output:logistic ");
+         //printf("output:logistic ");
          break;
        case 2:
-         printf("output:tanh ");
+         //printf("output:tanh ");
          break;
        case 3:
-         printf("output:linear ");
+         //printf("output:linear ");
          break;
        case 4:
-         printf("output:binary ");
+         //printf("output:binary ");
          break;
     }
   if (m_nbins > 1)
-    printf("bins: %d", m_nbins);
+    //printf("bins: %d", m_nbins);
   if (m_wInit < 0 || m_wInit > 2) 
     m_wInit = 0;
   switch (m_wInit)
     {
        case 0:
-         printf("init:xavier ");
+         //printf("init:xavier ");
          break;
        case 1:
-         printf("init: norm-incoming ");
+         //printf("init: norm-incoming ");
          break;
        case 2:
-         printf("init: uniform ");
+         //printf("init: uniform ");
          break;
     }
   if (m_normalize < 0 || m_normalize > 1)
     m_normalize = 0;
   if (m_normalize == 1)
-    printf("input-normalization ");
+    //printf("input-normalization ");
   if (m_clip < 0 || m_clip > 1)
     m_clip = 0;
   if (m_clip == 1)
-    printf("clip ");
+    //printf("clip ");
   if (m_randAct < 0 || m_randAct > 2)
     m_randAct = 0;
   switch (m_randAct)
     {
        case 1:
-         printf("motor-noise %.2f ", m_randActR);
+         //printf("motor-noise %.2f ", m_randActR);
          break;
        case 2:
-         printf("diagonal gaussian ");
+         //printf("diagonal gaussian ");
          break;
     }  
-  printf("\n");
+  //printf("\n");
     
   // allocate variables
   m_nblocks = 0;
@@ -576,15 +583,18 @@ void Evonet::initNetArchitecture()
   int b;
   if (verbose == 1)
   {
-    printf("the policy will be updated as follow:\n");
+    //printf("the policy will be updated as follow:\n");
     for (b = 0, nbl = m_netblock; b < m_nblocks; b++, nbl = (nbl + 5))
     {
       if (*nbl == 0)
-        printf("netinput of neurons [%d-%d] computed on the basis of activation received from neurons [%d-%d] \n", *(nbl + 1), *(nbl + 1) + *(nbl + 2),*(nbl + 3),*(nbl + 3) + *(nbl + 4));
+      {}
+        //printf("netinput of neurons [%d-%d] computed on the basis of activation received from neurons [%d-%d] \n", *(nbl + 1), *(nbl + 1) + *(nbl + 2),*(nbl + 3),*(nbl + 3) + *(nbl + 4));
       if (*nbl == 1)
-        printf("neuron [%d-%d] updated\n", *(nbl + 1), *(nbl + 1) + *(nbl + 2));
+      {}
+        //printf("neuron [%d-%d] updated\n", *(nbl + 1), *(nbl + 1) + *(nbl + 2));
       if (*nbl == 2)
-        printf("netinput of LSTM units [%d-%d] computed on the basis of activation received from neurons [%d-%d] \n", *(nbl + 1), *(nbl + 1) + *(nbl + 2),*(nbl + 3),*(nbl + 3) + *(nbl + 4));
+      {}
+        //printf("netinput of LSTM units [%d-%d] computed on the basis of activation received from neurons [%d-%d] \n", *(nbl + 1), *(nbl + 1) + *(nbl + 2),*(nbl + 3),*(nbl + 3) + *(nbl + 4));
     }
   }
     

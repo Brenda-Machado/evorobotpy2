@@ -99,7 +99,7 @@ class EvoAlgo(object):
     def save(
         self, esne=False
     ):  # save the best agent so far, the best postevaluated agent so far, and the statistical data
-        print("save data")
+        #print("save data")
         fname = self.filedir + "/bestS" + str(self.seed)
         np.save(fname, self.bestsol)
         fname = self.filedir + "/bestgS" + str(self.seed)
