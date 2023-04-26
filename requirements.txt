@@ -6,6 +6,7 @@ cma
 contourpy
 cycler
 Cython
+evograd
 fonttools
 gym
 gym-notices

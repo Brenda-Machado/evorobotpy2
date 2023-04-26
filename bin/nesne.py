@@ -20,11 +20,11 @@ import sys
 import os
 import configparser
 import torch
+import random
 from evograd import expectation
 from evograd.distributions import Normal
 
-# Natural Evolution Strategies Algorithm
-
+# Natural Evolution Strategies Niche Evolution
 
 class Algo(EvoAlgo):
     def __init__(self, env, policy, seed, fileini, filedir):
@@ -128,6 +128,11 @@ class Algo(EvoAlgo):
         self.normalizationdatacollected = (
             False  # whether we collected data for updating the normalization vector
         )
+        self.number_niches = 25
+        self.fitness = [-9999 for _ in range(self.number_niches)]
+        self.colonizer = [np.nan for _ in range(self.number_niches)]
+        self.candidates = [0 for _ in range(self.number_niches)]
+        
 
     def savedata(self):
         self.save()  # save the best agent so far, the best postevaluated agent so far, and progress data across generations
@@ -148,23 +153,65 @@ class Algo(EvoAlgo):
         )
         fp.close()
 
-    def evaluate(self, candidate):
-        
-        self.policy.set_trainable_flat(candidate)
-        self.policy.nn.normphase(
-            0
-        )  # normalization data is collected during the post-evaluation of the best sample of he previous generation
-        eval_rews, eval_length = self.policy.rollout(
-            self.policy.ntrials,
-            seed= self.seed
-        )
-        self.steps += eval_length
-        if eval_rews > self.bestestfit[0]:
-            self.bestestfit = (eval_rews, candidate)
+    def evaluate(self, candidate, oniche=None):
+            oniche_flag = True
+            if self.niche == self.number_niches:
+                self.cgen += 1
+                if self.cgen % 25 == 0:
+                    self.interniche()
+            
+            if oniche is None:        
+                oniche_flag = False
 
-        self.fitness_eval.append(eval_rews)
+            if not oniche_flag:
+                self.niche = self.niche % self.number_niches
+                oniche = self.niche
 
-        self.stat = np.append(
+            self.policy.set_trainable_flat(candidate)
+            self.policy.nn.normphase(
+                0
+            )  # normalization data is collected during the post-evaluation of the best sample of he previous generation
+            eval_rews, eval_length = self.policy.rollout(
+                self.policy.ntrials,
+                seed= self.niches[oniche]
+            )
+            self.steps += eval_length
+            if eval_rews > self.fitness[oniche] and oniche_flag == False:
+                self.fitness[oniche] = eval_rews
+                self.candidates[oniche] = candidate
+                if eval_rews == max(self.fitness):
+                    self.updateBest(eval_rews, candidate)
+            if not oniche_flag:
+                self.niche += 1
+
+            gfit = 0
+            if self.bestsol is not None:
+                self.policy.set_trainable_flat(self.bestsol)
+                self.tnormepisodes += self.inormepisodes
+                for t in range(self.policy.nttrials):
+                    if (
+                        self.policy.normalize == 1
+                        and self.normepisodes < self.tnormepisodes
+                    ):
+                        self.policy.nn.normphase(1)
+                        self.normepisodes += 1  # we collect normalization data
+                        self.normalizationdatacollected = True
+                    else:
+                        self.policy.nn.normphase(0)
+                    eval_rews, eval_length = self.policy.rollout(
+                        1, seed=(self.seed + 100000 + t)
+                    )
+                    gfit += eval_rews
+                    self.steps += eval_length
+                gfit /= self.policy.nttrials
+                self.updateBestg(gfit, self.bestsol)
+                if gfit > self.fitness[oniche] and not oniche_flag:
+                    self.fitness[oniche] = gfit
+                    self.candidates[oniche] = self.bestsol
+                    if gfit == max(self.fitness):
+                        print(max(self.fitness), self.cgen)
+            
+            self.stat = np.append(
                 self.stat,
                 [
                     self.steps,
@@ -174,10 +221,31 @@ class Algo(EvoAlgo):
                     self.avgfit,
                 ],
             )  # store performance across generations
-        
-        self.updateBest(self.bestestfit[0], self.bestestfit[1])
+
             
-        return (eval_rews)    
+            return eval_rews
+
+    def eval(self, candidate, oniche=None):
+        oniche_flag = True
+        
+        if oniche is None:        
+            oniche_flag = False
+
+        if not oniche_flag:
+            self.niche = self.niche % self.number_niches
+            oniche = self.niche
+
+        self.policy.set_trainable_flat(candidate)
+        self.policy.nn.normphase(
+            0
+        )  # normalization data is collected during the post-evaluation of the best sample of he previous generation
+        eval_rews, eval_length = self.policy.rollout(
+            self.policy.ntrials,
+            seed= self.niches[oniche]
+        )
+        self.steps += eval_length
+
+        return eval_rews 
     
     def pos_evaluate(self):
         
@@ -207,6 +275,36 @@ class Algo(EvoAlgo):
             gfit /= self.policy.nttrials
             self.updateBestg(gfit, self.bestsol)
 
+    def interniche(self): 
+        self.colonized = [False for _ in range(self.number_niches**2)]
+        fitMatrix = np.zeros(shape=(self.number_niches, self.number_niches))
+
+        for niche in range(self.number_niches):
+            for miche in range(self.number_niches):
+                if miche != niche:
+                    # Evaluate center of niche n in niche m
+                    fitMatrix[niche][miche] = self.eval(self.candidates[niche], miche)
+                else:
+                    fitMatrix[niche][miche] = -99999999
+
+        for miche in range(self.number_niches):
+            # biche = best niche in miche
+            biche = np.argmax([fitMatrix[j][miche] for j in range(self.number_niches)])
+            maxFit = fitMatrix[biche][miche]
+
+            
+            if maxFit > self.fitness[miche]:
+                print("Niche", biche+1, "colonized niche", miche+1)
+                self.colonizer[miche] = biche
+
+                for i in range(self.number_niches):
+                    fitMatrix[biche][i] = -99999999
+
+                # Replace i with o in niche m
+                self.fitness[miche] = maxFit
+                # Replace center of niche m with center of niche j
+                self.candidates[miche] = self.candidates[biche]
+
     def run(self):
 
         self.setProcess()  # initialize class variables
@@ -217,7 +315,7 @@ class Algo(EvoAlgo):
         self.bestestfit = (-99999999, None)
         self.fitness_eval = []
         print(
-            "NES: seed %d maxmsteps %d batchSize %d stepsize %lf noiseStdDev %lf wdecay %d symseed %d nparams %d"
+            "NES-NE: seed %d maxmsteps %d batchSize %d stepsize %lf noiseStdDev %lf wdecay %d symseed %d nparams %d"
             % (
                 self.seed,
                 self.maxsteps / 1000000,
@@ -229,6 +327,19 @@ class Algo(EvoAlgo):
                 self.nparams,
             )
         )
+
+        random_niches = []
+        num_random_niches = self.number_niches*100
+
+        for _ in range(num_random_niches):
+            random_niches.append([random.randint(1, num_random_niches*10) for _ in range(self.policy.ntrials)])
+
+        self.niches = [0 for _ in range(self.number_niches)]
+ 
+        for niche in range(self.number_niches): 
+            self.niches[niche] = random_niches[niche]
+
+        self.niche = 0
 
         while self.steps < self.maxsteps:
 
