@@ -8,7 +8,12 @@ sudo apt-get install libgsl-dev libopenmpi-dev python3-virtualenv python3-dev py
 After that, create a virtual environment in the root directory:
 ```bash
 virtualenv -p python3 venv
-source venv/bin/activate (or source venv/local/bin/activate)
+source venv/bin/activate
+```
+or
+```bash
+virtualenv -p python3 venv
+source venv/local/bin/activate
 ```
 Then install the requirements:
 ```bash
@@ -44,8 +49,13 @@ make compile_all
 
 To run a model, first go to the target environment, and then run the following command:
 ```bash
-evrun -f {target environment}.ini or python3 ~/evorobotpy2/bin/es.py -f {target environment}.ini
+evrun -f {target environment}.ini
 ```
+or 
+```bash
+python3 ~/evorobotpy2/bin/es.py -f {target environment}.ini
+```
+
 To see all execution options run:
 ```bash
 evrun --help
