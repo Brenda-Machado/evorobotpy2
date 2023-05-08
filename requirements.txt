@@ -5,12 +5,12 @@ cloudpickle
 cma
 contourpy
 cycler
-Cython
+cython
 evograd
 fonttools
 gym
 gym-notices
-Jinja2
+jinja2
 jinja2-time
 kiwisolver
 make
@@ -22,10 +22,10 @@ numpy
 pandas
 packaging
 pathspec
-Pillow
+pillow
 platformdirs
 pybullet
-pyglet
+pyglet==1.5
 pyparsing
 python-dateutil
 regex
