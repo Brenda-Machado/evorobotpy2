@@ -77,7 +77,7 @@ class Algo(EvoAlgo):
                 % (self.fileini)
             )
 
-    def save(self, ceval, cgen, bfit, bgfit, avefit, aveweights):
+    def savedata(self, ceval, cgen, bfit, bgfit, avefit, aveweights):
         self.save()  #  save the best agent, the best postevaluated agent, and progress data across generations
         fname = self.filedir + "/S" + str(self.seed) + ".fit"
         fp = open(fname, "w")  # save summary
@@ -176,7 +176,7 @@ class Algo(EvoAlgo):
             )
 
         # display info
-        print(
+        """print(
             "Seed %d (%.1f%%) gen %d msteps %d bestfit %.2f bestgfit %.2f cbestfit %.2f cbestgfit %.2f avgfit %.2f weightsize %.2f"
             % (
                 self.seed,
@@ -190,7 +190,7 @@ class Algo(EvoAlgo):
                 np.average(self.fitness),
                 np.average(np.absolute(self.pop[index[0]])),
             )
-        )
+        )"""
 
     def inniche(self, niche): 
         bestg = None
