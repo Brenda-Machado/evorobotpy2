@@ -10,8 +10,7 @@
    requires es.py, policy.py, and evoalgo.py; and modified to work with niches and environmental differentiation
 """
 
-import numpy as np
-from numpy import zeros, ones, dot, sqrt
+ 
 import math
 import time
 from evoalgo import EvoAlgo
@@ -20,6 +19,7 @@ import sys
 import os
 import configparser
 import random
+from phylogenetic import Phylogenetic
 
 # Parallel implementation of Open-AI-ES algorithm developed by Salimans et al. (2017)
 # the workers evaluate a fraction of the population in parallel
@@ -108,7 +108,7 @@ class Algo(EvoAlgo):
         self.loadhyperparameters()  # load hyperparameters
         self.avecenter = None
         self.nGens = 50            # number of generations until migration occurs
-        self.bniche = None    
+        self.bniche = None 
         self.colonizer = [np.nan for _ in range(self.number_niches)]
         self.fitness = np.zeros(self.number_niches)
         self.avecenters = np.zeros(self.number_niches)
@@ -138,8 +138,10 @@ class Algo(EvoAlgo):
         self.normalizationdatacollected = (
             False  # whether we collected data for updating the normalization vector
         )
+        self.phylogenetic = Phylogenetic(self.number_niches, (self.maxsteps/self.nGens), self.seed).initial()   
 
     def savedata(self):
+        self.phylogenetic.save()
         self.save(esne=True)  # save the best agent so far, the best postevaluated agent so far, and progress data across generations
         fname = self.filedir + "/S" + str(self.seed) + ".fit"
         fp = open(fname, "w")  # save summary
@@ -340,6 +342,7 @@ class Algo(EvoAlgo):
             
             if maxFit > self.fitness[miche]:
                 print("Niche", biche+1, "colonized niche", miche+1)
+                self.phylogenetic.colonize(biche+1, miche+1)
                 self.colonized[miche] = biche
 
                 for i in range(self.number_niches):
