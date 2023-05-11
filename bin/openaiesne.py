@@ -10,7 +10,8 @@
    requires es.py, policy.py, and evoalgo.py; and modified to work with niches and environmental differentiation
 """
 
- 
+import numpy as np
+from numpy import zeros, ones, dot, sqrt
 import math
 import time
 from evoalgo import EvoAlgo
@@ -138,7 +139,7 @@ class Algo(EvoAlgo):
         self.normalizationdatacollected = (
             False  # whether we collected data for updating the normalization vector
         )
-        self.phylogenetic = Phylogenetic(self.number_niches, (self.maxsteps/self.nGens), self.seed).initial()   
+        self.phylogenetic = Phylogenetic(self.number_niches, ((self.nGens)), self.seed)   
 
     def savedata(self):
         self.phylogenetic.save()
@@ -342,7 +343,7 @@ class Algo(EvoAlgo):
             
             if maxFit > self.fitness[miche]:
                 print("Niche", biche+1, "colonized niche", miche+1)
-                self.phylogenetic.colonize(biche+1, miche+1)
+                self.phylogenetic.colonize(biche, miche)
                 self.colonized[miche] = biche
 
                 for i in range(self.number_niches):
