@@ -16,6 +16,16 @@ do
         shift # past argument
         shift # past value
         ;;
+	--numberniches)
+	numberniches="$2"
+	shift # past argument
+	shift # past value
+	;;
+	--numgens)
+	numgens="$2"
+	shift # past argument
+	shift # past argument
+	;;
         *)    # unknown option
         shift # past argument
         ;;
@@ -31,11 +41,14 @@ ini_name="/root/evorobotpy2/environments/xdpole/ErDpoleSSS.ini"
 # Paramters to change in the .ini file
 sample=$sample
 episode=$episodes
+numberniches=$numberniches
+numgens=$numgens
 
 # Change the .ini file
-#sed -i "s/sampleSize = .*/sampleSize = $sample/g" $ini_name
-#sed -i "s/episodes = .*/episodes = $episode/g" $ini_name
-
+sed -i "s/popsize = .*/popsize = $sample/g" $ini_name
+sed -i "s/episodes = .*/episodes = $episode/g" $ini_name
+sed -i "s/number_niches = .*/number_niches = $numberniches/g" $ini_name
+sed -i "s/numgens = .*/numgens = $numgens/g" $ini_name
 # How many seeds do you want to run for each experiment?
 number_of_seeds=10
 

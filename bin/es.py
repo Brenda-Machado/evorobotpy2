@@ -22,7 +22,7 @@ import subprocess
 import stat
 
 environment = None  # the problem
-algoname = "CMA-ES"  # evolutionary algorithm
+algoname = "OpenAI-ES-NE"  # evolutionary algorithm
 
 # Parse the [ADAPT] section of the configuration file
 def parseConfigFile(filename):

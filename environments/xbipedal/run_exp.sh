@@ -23,24 +23,24 @@ do
 done
 
 # Experiment folder (relative path)
-e_folder="/root/evorobotpy2/environments/xdpole"
+e_folder="/root/evorobotpy2/environments/xbipedal"
 
 # Which .ini file to use?
-ini_name="/root/evorobotpy2/environments/xdpole/ErDpoleSSS.ini"
+ini_name="/root/evorobotpy2/environments/xbipedal/bipedal.ini"
 
 # Paramters to change in the .ini file
 sample=$sample
 episode=$episodes
 
 # Change the .ini file
-#sed -i "s/sampleSize = .*/sampleSize = $sample/g" $ini_name
-#sed -i "s/episodes = .*/episodes = $episode/g" $ini_name
+sed -i "s/sampleSize = .*/sampleSize = $sample/g" $ini_name
+sed -i "s/episodes = .*/episodes = $episode/g" $ini_name
 
 # How many seeds do you want to run for each experiment?
-number_of_seeds=10
+number_of_seeds=1
 
 #How many experiments do you want to run simultaneously?
-simultaneously=10
+simultaneously=1
 
 #Seed initial number
 seeds_numbers=()
