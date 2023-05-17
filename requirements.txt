@@ -8,7 +8,7 @@ cycler
 cython
 evograd
 fonttools
-gym
+gym==0.22.0
 gym-notices
 jinja2
 jinja2-time
