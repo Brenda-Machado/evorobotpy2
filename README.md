@@ -10,11 +10,6 @@ After that, create a virtual environment in the root directory:
 virtualenv -p python3 venv
 source venv/bin/activate
 ```
-or
-```bash
-virtualenv -p python3 venv
-source venv/local/bin/activate
-```
 Then install the requirements:
 ```bash
 pip install -r requirements.txt
@@ -81,11 +76,11 @@ For an introduction to the theory and to state-of-the-art research in this areas
 Please use this BibTeX to cite this repository in your publications:
 ```
 @misc{evorobotpy2,
-  author = {Stefano Nolfi},
+  author = {Stefano Nolfi, Brenda S. Machado and Arthur H. Bianchini},
   title = {A tool for training robots through evolutionary and reinforcement learning methods},
-  year = {2020},
+  year = {2023},
   publisher = {GitHub},
   journal = {GitHub repository},
-  howpublished = {\url{https://github.com/snolfi/evorobotpy2}},
+  howpublished = {\url{https://github.com/Brenda-Machado/evorobotpy2/}},
 }
 ```
