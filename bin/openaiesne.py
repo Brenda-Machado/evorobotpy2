@@ -107,7 +107,7 @@ class Algo(EvoAlgo):
     def setProcess(self):
         self.loadhyperparameters()  # load hyperparameters
         self.avecenter = None
-        self.nGens = 50            # number of generations until migration occurs
+        self.nGens = 34            # number of generations until migration occurs
         self.bniche = None    
         self.colonizer = [np.nan for _ in range(self.number_niches)]
         self.fitness = np.zeros(self.number_niches)
@@ -323,6 +323,8 @@ class Algo(EvoAlgo):
     def interniche(self): 
         self.colonized = [False for _ in range(self.number_niches**2)]
         fitMatrix = np.zeros(shape=(self.number_niches, self.number_niches))
+        self.newCenters = self.centers[:]
+        hasColonized = False
 
         for niche in range(self.number_niches):
             for miche in range(self.number_niches):
@@ -339,16 +341,22 @@ class Algo(EvoAlgo):
 
             
             if maxFit > self.fitness[miche]:
-                print("Niche", biche+1, "colonized niche", miche+1)
+                print("Niche", biche, "colonized niche", miche)
                 self.colonized[miche] = biche
+                hasColonized = True
 
                 for i in range(self.number_niches):
                     fitMatrix[biche][i] = -99999999
 
                 # Replace i with o in niche m
                 self.fitness[miche] = maxFit
-                # Replace center of niche m with center of niche j
-                self.centers[miche] = self.centers[biche]
+
+                # Replace center of niche m with center of niche n
+                self.newCenters[miche] = self.centers[biche]
+
+        if hasColonized:
+            for niche in range(self.number_niches):
+                self.centers[niche] = self.newCenters[niche]
 
     def run(self):
 
