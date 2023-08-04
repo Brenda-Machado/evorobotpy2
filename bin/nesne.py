@@ -278,12 +278,14 @@ class Algo(EvoAlgo):
     def interniche(self): 
         self.colonized = [False for _ in range(self.number_niches**2)]
         fitMatrix = np.zeros(shape=(self.number_niches, self.number_niches))
+        self.newCenters = self.centers[:]
+        hasColonized = False
 
         for niche in range(self.number_niches):
             for miche in range(self.number_niches):
                 if miche != niche:
                     # Evaluate center of niche n in niche m
-                    fitMatrix[niche][miche] = self.eval(self.candidates[niche], miche)
+                    fitMatrix[niche][miche] = self.evaluate(niche, miche)
                 else:
                     fitMatrix[niche][miche] = -99999999
 
@@ -294,16 +296,22 @@ class Algo(EvoAlgo):
 
             
             if maxFit > self.fitness[miche]:
-                print("Niche", biche+1, "colonized niche", miche+1)
-                self.colonizer[miche] = biche
+                print("Niche", biche, "colonized niche", miche)
+                self.colonized[miche] = biche
+                hasColonized = True
 
                 for i in range(self.number_niches):
                     fitMatrix[biche][i] = -99999999
 
                 # Replace i with o in niche m
                 self.fitness[miche] = maxFit
-                # Replace center of niche m with center of niche j
-                self.candidates[miche] = self.candidates[biche]
+
+                # Replace center of niche m with center of niche n
+                self.newCenters[miche] = self.centers[biche]
+
+        if hasColonized:
+            for niche in range(self.number_niches):
+                self.centers[niche] = self.newCenters[niche]
 
     def run(self):
 
