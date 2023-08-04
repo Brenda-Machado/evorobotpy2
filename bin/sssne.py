@@ -224,6 +224,8 @@ class Algo(EvoAlgo):
         fitMatrix = np.zeros(shape=(self.number_niches, self.number_niches))
         self.current_colonized = [i for i in range(self.number_niches)]
         self.boffspring = [0 for _ in range(self.number_niches)]
+        self.temp_pop = self.pop[:]
+        hasColonized = False
         for niche in range(self.number_niches):
             bfitness = -999999
             for o in range(niche, self.popsize, self.number_niches):
@@ -249,12 +251,15 @@ class Algo(EvoAlgo):
             if maxFit > self.fitness[miche]:
                 biche = np.argmax(fitMatrix[:][miche])
                 print("Niche", biche+1, "colonized niche", miche+1)
+                hasColonized = True
                 for i in range(self.number_niches):
                     fitMatrix[i][biche] = -99999999
                     fitMatrix[miche][i] = -99999999
                 # Replace i with o in niche m
                 self.fitness[miche] = maxFit
-                self.pop[self.boffspring[miche]] = self.pop[self.boffspring[biche]]
+                self.temp_pop[self.boffspring[miche]] = self.pop[self.boffspring[biche]]
+        if hasColonized:
+            self.pop = self.temp_pop[:]
 
 
     def run(self):
