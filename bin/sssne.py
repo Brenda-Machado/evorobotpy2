@@ -36,6 +36,7 @@ class Algo(EvoAlgo):
             self.mutation = 0.02
             self.saveeach = 60
             self.number_niches = 25
+            self.nGens = 50
             options = config.options("ALGO")
             for o in options:
                 found = 0
@@ -53,6 +54,9 @@ class Algo(EvoAlgo):
                     found = 1
                 if o == "number_niches":
                     self.number_niches = config.getint("ALGO", "number_niches")
+                    found = 1
+                if o == "nGens":
+                    self.nGens = config.getint("ALGO", "nGens")
                     found = 1
 
                 if found == 0:
@@ -250,7 +254,7 @@ class Algo(EvoAlgo):
             maxFit = fitMatrix[biche][miche]
             if maxFit > self.fitness[miche]:
                 biche = np.argmax(fitMatrix[:][miche])
-                print("Niche", biche+1, "colonized niche", miche+1)
+                #print("Niche", biche+1, "colonized niche", miche+1)
                 hasColonized = True
                 for i in range(self.number_niches):
                     fitMatrix[i][biche] = -99999999
@@ -287,10 +291,10 @@ class Algo(EvoAlgo):
         for i in range(self.popsize):
             self.pop[i] = self.policy.get_trainable_flat()
 
-        print(
+        """print(
             "SSSNE: seed %d maxmsteps %d popSize %d noiseStdDev %lf nparams %d"
             % (self.seed, self.maxsteps / 1000000, self.popsize, self.mutation, nparams)
-        )
+        )"""
 
         # main loop
         elapsed = 0
@@ -299,7 +303,7 @@ class Algo(EvoAlgo):
 
         while self.ceval < self.maxsteps:
 
-            for gen in range(50):
+            for gen in range(self.nGens):
                 self.evaluate()
                 self.storePerformance()
                 self.intraniche()
@@ -324,4 +328,5 @@ class Algo(EvoAlgo):
             np.average(np.absolute(self.pop[0])),
         )
         end_time = time.time()
-        print("Simulation time: %dm%ds " % (divmod(end_time - start_time, 60)))
+        #print("Simulation time: %dm%ds " % (divmod(end_time - start_time, 60)))
+        print(1000 - self.bestgfit)
