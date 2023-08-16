@@ -83,7 +83,7 @@ class Algo(EvoAlgo):
 
     def setProcess(self):
         self.loadhyperparameters()  # load hyperparameters
-        self.center = np.copy(self.policy.get_trainable_flat())  # the initial centroid
+        self.center = self.policy.get_trainable_flat()[:]  # the initial centroid
         self.nparams = len(self.center)  # number of adaptive parameters
         self.cgen = 0  # currrent generation
         self.bestgfit = -99999999  # the best generalization fitness
@@ -158,7 +158,6 @@ class Algo(EvoAlgo):
             self.candidates[oniche] = candidate
             if eval_rews == max(self.fitness):
                 self.updateBest(eval_rews, candidate)
-                # print(max(self.fitness), self.cgen)
         if not oniche_flag:
             self.niche += 1
 
@@ -176,18 +175,16 @@ class Algo(EvoAlgo):
                     self.normalizationdatacollected = True
                 else:
                     self.policy.nn.normphase(0)
-                eval_rews, eval_length = self.policy.rollout(
+                eval_rews_p, eval_length_p = self.policy.rollout(
                     1, seed=(self.seed + 100000 + t)
                 )
-                gfit += eval_rews
-                self.steps += eval_length
+                gfit += eval_rews_p
+                self.steps += eval_length_p
             gfit /= self.policy.nttrials
             self.updateBestg(gfit, self.bestsol)
             if gfit > self.fitness[oniche] and not oniche_flag:
                 self.fitness[oniche] = gfit
                 self.candidates[oniche] = self.bestsol
-                if gfit == max(self.fitness):
-                    print(max(self.fitness), self.cgen)
         
         self.stat = np.append(
             self.stat,
@@ -236,7 +233,7 @@ class Algo(EvoAlgo):
             for miche in range(self.number_niches):
                 if miche != niche:
                     # Evaluate center of niche n in niche m
-                    fitMatrix[niche][miche] = self.evaluate(niche, miche)
+                    fitMatrix[niche][miche] = self.eval(self.candidates[niche], miche)
                 else:
                     fitMatrix[niche][miche] = -99999999
 
@@ -245,10 +242,9 @@ class Algo(EvoAlgo):
             biche = np.argmax([fitMatrix[j][miche] for j in range(self.number_niches)])
             maxFit = fitMatrix[biche][miche]
 
-            
             if maxFit > self.fitness[miche]:
                 print("Niche", biche, "colonized niche", miche)
-                self.colonized[miche] = biche
+                self.colonizer[miche] = biche
                 hasColonized = True
 
                 for i in range(self.number_niches):
