@@ -94,8 +94,8 @@ class Algo(EvoAlgo):
         self.cma_es = cma.CMAEvolutionStrategy(self.center, self.noiseStdDev) # CMA-ES initialization
         self.number_niches = 25
         self.fitness = [-9999 for _ in range(self.number_niches)]
-        self.colonizer = [np.nan for _ in range(self.numberNiches)]
-        self.avecenters = np.zeros(self.numberNiches)
+        self.colonizer = [np.nan for _ in range(self.number_niches)]
+        self.avecenters = np.zeros(self.number_niches)
         self.candidates = [0 for _ in range(self.number_niches)]
         self.gfitness = [-9999 for _ in range(self.number_niches)]
         self.gcandidates = [0 for _ in range(self.number_niches)]
@@ -135,7 +135,6 @@ class Algo(EvoAlgo):
         if self.niche == self.number_niches:
             self.cgen += 1
             if self.cgen % 25 == 0:
-                print(self.cgen)
                 self.interniche()
         
         if oniche is None:        
@@ -159,7 +158,7 @@ class Algo(EvoAlgo):
             self.candidates[oniche] = candidate
             if eval_rews == max(self.fitness):
                 self.updateBest(eval_rews, candidate)
-                print(max(self.fitness), self.cgen)
+                # print(max(self.fitness), self.cgen)
         if not oniche_flag:
             self.niche += 1
 
@@ -230,7 +229,7 @@ class Algo(EvoAlgo):
     def interniche(self): 
         self.colonized = [False for _ in range(self.number_niches**2)]
         fitMatrix = np.zeros(shape=(self.number_niches, self.number_niches))
-        self.newCenters = self.centers[:]
+        self.newCenters = self.candidates[:]
         hasColonized = False
 
         for niche in range(self.number_niches):
@@ -259,11 +258,11 @@ class Algo(EvoAlgo):
                 self.fitness[miche] = maxFit
 
                 # Replace center of niche m with center of niche n
-                self.newCenters[miche] = self.centers[biche]
+                self.newCenters[miche] = self.candidates[biche]
 
         if hasColonized:
             for niche in range(self.number_niches):
-                self.centers[niche] = self.newCenters[niche]
+                self.candidates[niche] = self.newCenters[niche]
             
 
     def run(self):
@@ -299,7 +298,7 @@ class Algo(EvoAlgo):
 
         self.niche = 0
         while self.steps < self.maxsteps:
-            self.cma_es.optimize(self.evaluate, maxfun=50)
+            self.cma_es.optimize(self.evaluate, iterations=50)
             
         if (time.time() - last_save_time) > (self.saveeach * 60):
             self.savedata()  # save data on files

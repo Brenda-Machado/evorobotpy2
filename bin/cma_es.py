@@ -2,11 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
-   This file belong to https://github.com/snolfi/evorobotpy
-   and has been written by Stefano Nolfi and Paolo Pagliuca, stefano.nolfi@istc.cnr.it, paolo.pagliuca@istc.cnr.it
-   salimans.py include an implementation of the OpenAI-ES algorithm described in
-   Salimans T., Ho J., Chen X., Sidor S & Sutskever I. (2017). Evolution strategies as a scalable alternative to reinforcement learning. arXiv:1703.03864v2
-   requires es.py, policy.py, and evoalgo.py 
+   This file belong to https://github.com/Brenda-Machado/evorobotpy2
+   and has been written by Brenda S. Machado, brenda.silva.machado@grad.ufsc.br, and Arthur H. Bianchini, arthur.h.bianchini@grad.ufsc.br.
 """
 
 import numpy as np
@@ -82,7 +79,7 @@ class Algo(EvoAlgo):
 
     def setProcess(self):
         self.loadhyperparameters()  # load hyperparameters
-        self.center = np.copy(self.policy.get_trainable_flat())  # the initial centroid
+        self.center = self.policy.get_trainable_flat()[:]  # the initial centroid
         self.nparams = len(self.center)  # number of adaptive parameters
         self.cgen = 0  # currrent generation
         self.bestgfit = -99999999  # the best generalization fitness
@@ -123,19 +120,21 @@ class Algo(EvoAlgo):
         fp.close()
 
     def evaluate(self, candidate):
-        
+
         self.policy.set_trainable_flat(candidate)
+        # print(candidate)
         self.policy.nn.normphase(
             0
         )  # normalization data is collected during the post-evaluation of the best sample of he previous generation
         eval_rews, eval_length = self.policy.rollout(
             self.policy.ntrials,
-            seed= self.seed
+            seed = self.seed
         )
         self.steps += eval_length
         if eval_rews > self.bestestfit[0]:
             self.bestestfit = (eval_rews, candidate)
-            # print(eval_rews)
+            self.updateBest(self.bestestfit[0], self.bestestfit[1]
+        )  # Stored if it is the best obtained so far
 
         self.fitness_eval.append(eval_rews)
 
@@ -150,6 +149,31 @@ class Algo(EvoAlgo):
                     self.avecenter,
                 ],
             )  # store performance across generations
+        
+        self.avgfit = np.average(self.fitness_eval)  # compute the average fitness
+
+        # postevaluate best sample of the last generation
+        gfit = 0
+        if self.bestsol is not None:
+            self.policy.set_trainable_flat(self.bestsol)
+            self.tnormepisodes += self.inormepisodes
+            for t in range(self.policy.nttrials):
+                if (
+                    self.policy.normalize == 1
+                    and self.normepisodes < self.tnormepisodes
+                ):
+                    self.policy.nn.normphase(1)
+                    self.normepisodes += 1  # we collect normalization data
+                    self.normalizationdatacollected = True
+                else:
+                    self.policy.nn.normphase(0)
+                eval_rews_p, eval_length_p = self.policy.rollout(
+                    1, seed=(self.seed + 100000 + t)
+                )
+                gfit += eval_rews_p
+                self.steps += eval_length_p
+            gfit /= self.policy.nttrials
+            self.updateBestg(gfit, self.bestsol)
             
         return (1000 - eval_rews)
 
@@ -175,9 +199,7 @@ class Algo(EvoAlgo):
 
         while self.steps < self.maxsteps:
 
-            self.cma_es.optimize(self.evaluate, maxfun=50)
-
-            self.updateBest(self.bestestfit[0], self.bestestfit[1])  # Stored if it is the best obtained so far
+            self.cma_es.optimize(self.evaluate, iterations=50)  # CMA-ES optimization
 
             if (time.time() - last_save_time) > (self.saveeach * 60):
                 self.savedata()  # save data on files

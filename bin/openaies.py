@@ -156,6 +156,7 @@ class Algo(EvoAlgo):
 
         # evaluate samples
         candidate = np.arange(self.nparams, dtype=np.float64)
+        print(candidate)
         for b in range(self.batchSize):
             for bb in range(2):
                 if bb == 0:
