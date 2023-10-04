@@ -21,6 +21,8 @@ import configparser
 import torch
 from evograd import expectation
 from evograd.distributions import Normal
+import pandas as pd
+import re
 
 # TEST VERSION OF NES
 # TRYING TO FIX THE BUGS
@@ -129,6 +131,7 @@ class Algo(EvoAlgo):
         self.normalizationdatacollected = (
             False  # whether we collected data for updating the normalization vector
         )
+        self.candidates_list = []
 
     def savedata(self):
         self.save()  # save the best agent so far, the best postevaluated agent so far, and progress data across generations
@@ -157,6 +160,16 @@ class Algo(EvoAlgo):
         self.rs = np.random.RandomState(cseed)
         self.samples = self.rs.randn(self.batchSize, self.nparams)
         self.cgen += 1
+
+        primeiros_valores = []
+
+        # Itere sobre a lista de tensores
+        for tensor in candidate:
+            primeiro_valor = tensor.item()  # Obtenha o primeiro valor do tensor
+            primeiros_valores.append(float(primeiro_valor))
+
+        # Converta o valor string em um número float
+        self.candidates_list.append(primeiros_valores)
 
         # evaluate samples
         for b in range(self.batchSize):
@@ -269,9 +282,9 @@ class Algo(EvoAlgo):
                 ],
             )  # store performance across generations
 
-            if (time.time() - last_save_time) > (self.saveeach * 60):
-                self.savedata()  # save data on files
-                last_save_time = time.time()
+            # if (time.time() - last_save_time) > (self.saveeach * 60):
+            #     self.savedata()  # save data on files
+            #     last_save_time = time.time()
 
             if self.normalizationdatacollected:
                 self.policy.nn.updateNormalizationVectors()  # update the normalization vectors with the new data collected
@@ -291,8 +304,10 @@ class Algo(EvoAlgo):
                     self.avecenter,
                 )
             )
+        df = pd.DataFrame(self.candidates_list)
+        df.to_csv('nes_candidates.csv', index=False)
 
-        self.savedata()  # save data at the end of evolution
+        # self.savedata()  # save data at the end of evolution
 
         # print simulation time
         end_time = time.time()

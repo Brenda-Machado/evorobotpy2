@@ -37,6 +37,7 @@ class Algo(EvoAlgo):
             self.noiseStdDev = 0.02
             self.symseed = 1
             self.saveeach = 60
+            self.batchSize = 100
             options = config.options("ALGO")
             for o in options:
                 found = 0
@@ -121,14 +122,20 @@ class Algo(EvoAlgo):
 
     def evaluate(self, candidate):
 
+        cseed = (
+            self.seed + self.cgen * self.batchSize
+        )  # Set the seed for current generation (master and workers have the same seed)
+        self.rs = np.random.RandomState(cseed)
+        self.samples = self.rs.randn(self.batchSize, self.nparams)
+        self.cgen += 1
+
         self.policy.set_trainable_flat(candidate)
-        # print(candidate)
         self.policy.nn.normphase(
             0
         )  # normalization data is collected during the post-evaluation of the best sample of he previous generation
         eval_rews, eval_length = self.policy.rollout(
             self.policy.ntrials,
-            seed = self.seed
+            seed = cseed
         )
         self.steps += eval_length
         if eval_rews > self.bestestfit[0]:
@@ -138,18 +145,6 @@ class Algo(EvoAlgo):
 
         self.fitness_eval.append(eval_rews)
 
-        self.stat = np.append(
-                self.stat,
-                [
-                    self.steps,
-                    self.bestfit,
-                    self.bestgfit,
-                    self.bfit,
-                    self.avgfit,
-                    self.avecenter,
-                ],
-            )  # store performance across generations
-        
         self.avgfit = np.average(self.fitness_eval)  # compute the average fitness
 
         # postevaluate best sample of the last generation
@@ -174,6 +169,18 @@ class Algo(EvoAlgo):
                 self.steps += eval_length_p
             gfit /= self.policy.nttrials
             self.updateBestg(gfit, self.bestsol)
+        
+            self.stat = np.append(
+                self.stat,
+                [
+                    self.steps,
+                    self.bestfit,
+                    self.bestgfit,
+                    self.bfit,
+                    self.avgfit,
+                    self.avecenter,
+                ],
+            )  # store performance across generations
             
         return (1000 - eval_rews)
 

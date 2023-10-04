@@ -18,6 +18,7 @@ from utils import ascendent_sort
 import sys
 import os
 import configparser
+import pandas as pd
 import cma
 
 # TEST VERSION OF CMA-ES
@@ -99,14 +100,14 @@ class Algo(EvoAlgo):
 
     def setProcess(self):
         self.loadhyperparameters()  # load hyperparameters
-        self.center = np.copy(self.policy.get_trainable_flat())  # the initial centroid
+        self.center = self.policy.get_trainable_flat()[:] # the initial centroid
         self.nparams = len(self.center)  # number of adaptive parameters
         self.cgen = 0  # currrent generation
         self.samplefitness = zeros(self.batchSize * 2)  # the fitness of the samples
         self.samples = None  # the random samples
         self.m = zeros(self.nparams)  # Adam: momentum vector
         self.v = zeros(self.nparams)  # Adam: second momentum vector (adam)
-        self.cma_es = cma.CMAEvolutionStrategy(self.center, self.noiseStdDev)
+        self.cma_es = cma.CMAEvolutionStrategy(self.center, self.noiseStdDev, {'popsize': self.batchSize, 'seed': self.seed}) # CMA-ES initialization
         self.avecenter = 0
         self.epsilon = 1e-08  # Adam: To avoid numerical issues with division by zero...
         self.beta1 = 0.9  # Adam: beta1
@@ -127,6 +128,7 @@ class Algo(EvoAlgo):
         self.normalizationdatacollected = (
             False  # whether we collected data for updating the normalization vector
         )
+        self.candidates_list = []
 
     def savedata(self):
         self.save()  # save the best agent so far, the best postevaluated agent so far, and progress data across generations
@@ -149,6 +151,10 @@ class Algo(EvoAlgo):
         fp.close()
 
     def evaluate(self, candidate):
+
+        self.candidates_list.append(candidate)
+
+        self.center = candidate
         cseed = (
             self.seed + self.cgen * self.batchSize
         )  # Set the seed for current generation (master and workers have the same seed)
@@ -235,7 +241,7 @@ class Algo(EvoAlgo):
         )
 
         while self.steps < self.maxsteps:
-            self.cma_es.optimize(self.evaluate, maxfun=50)  # CMA-ES optimization
+            self.cma_es.optimize(self.evaluate, iterations = 1)  # CMA-ES optimization
 
             self.stat = np.append(
                 self.stat,
@@ -272,7 +278,11 @@ class Algo(EvoAlgo):
                 )
             )
 
-        self.savedata()  # save data at the end of evolution
+        df = pd.DataFrame(self.candidates_list)
+        df.to_csv('cma_es_candidates.csv', index=False)
+
+        # ALTERAR
+        #self.savedata()  # save data at the end of evolution
 
         # print simulation time
         end_time = time.time()

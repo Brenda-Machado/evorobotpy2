@@ -55,6 +55,7 @@ if len(sys.argv) == 1:
         print("\033[1mERROR: No stat*.npy file found\033[0m")
     else:
         plt.legend()
+        plt.savefig('teste' + ".png")
         plt.show()
 
 
@@ -69,4 +70,5 @@ else:
         plt.plot(stat[0], stat[1], label="fit", linewidth=1, color="r")
         plt.plot(stat[0], stat[2], label="gfit", linewidth=1, color="b")
         plt.legend()
+        plt.savefig('teste' + ".png")
         plt.show()

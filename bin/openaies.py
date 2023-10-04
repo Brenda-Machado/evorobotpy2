@@ -18,6 +18,7 @@ from utils import ascendent_sort
 import sys
 import os
 import configparser
+import pandas as pd
 
 # Parallel implementation of Open-AI-ES algorithm developed by Salimans et al. (2017)
 # the workers evaluate a fraction of the population in parallel
@@ -125,6 +126,7 @@ class Algo(EvoAlgo):
         self.normalizationdatacollected = (
             False  # whether we collected data for updating the normalization vector
         )
+        self.list_candidates = []  # list of candidates
 
     def savedata(self):
         self.save()  # save the best agent so far, the best postevaluated agent so far, and progress data across generations
@@ -154,9 +156,9 @@ class Algo(EvoAlgo):
         self.samples = self.rs.randn(self.batchSize, self.nparams)
         self.cgen += 1
 
+
         # evaluate samples
         candidate = np.arange(self.nparams, dtype=np.float64)
-        print(candidate)
         for b in range(self.batchSize):
             for bb in range(2):
                 if bb == 0:
@@ -173,6 +175,8 @@ class Algo(EvoAlgo):
                 )
                 self.samplefitness[b * 2 + bb] = eval_rews
                 self.steps += eval_length
+        
+        self.list_candidates.append(candidate)
 
         fitness, self.index = ascendent_sort(self.samplefitness)  # sort the fitness
         self.avgfit = np.average(fitness)  # compute the average fitness
@@ -308,7 +312,7 @@ class Algo(EvoAlgo):
             )  # store performance across generations
 
             if (time.time() - last_save_time) > (self.saveeach * 60):
-                self.savedata()  # save data on files
+                # self.savedata()  # save data on files
                 last_save_time = time.time()
 
             if self.normalizationdatacollected:
@@ -329,8 +333,11 @@ class Algo(EvoAlgo):
                     self.avecenter,
                 )
             )
+        
+        df = pd.DataFrame(self.list_candidates)
+        df.to_csv('open_es_candidates.csv', index=False)
 
-        self.savedata()  # save data at the end of evolution
+        # self.savedata()  # save data at the end of evolution
 
         # print simulation time
         end_time = time.time()

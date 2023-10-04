@@ -17,6 +17,7 @@ import numpy as np
 import configparser
 import time
 import sys
+import pandas as pd
 
 
 class Policy(object):
@@ -474,11 +475,13 @@ class ErPolicy(Policy):
         env.copyDone(
             self.done
         )  # pass the pointer to the done vector to the Er environment
+        self.fit = []
 
     # === Rollouts/training ===
     def rollout(self, ntrials, render=False, seed=None):
         rews = 0.0  # summed reward
         steps = 0  # steps performed
+        
 
         if (
             self.test > 0
@@ -508,9 +511,9 @@ class ErPolicy(Policy):
                 rew += self.env.step()  # perform a simulation step
                 t += 1
                 if self.test > 0:
-                    self.env.render()
+                    #self.env.render()
                     info = "Trial %d Step %d Fit %.2f %.2f" % (trial, t, rew, rews)
-                    renderWorld.update(self.objs, info, self.ob, self.ac, self.nact)
+                    #renderWorld.update(self.objs, info, self.ob, self.ac, self.nact)
                 if self.done:
                     break
             if self.test > 0:
@@ -518,10 +521,15 @@ class ErPolicy(Policy):
 
             steps += t
             rews += rew
+            self.fit.append(rew)
 
         rews /= ntrials                         # Normalize reward by the number of trials
 
         if (self.test > 0 and ntrials > 1):
             print("Average Fit %.2f Steps %.2f " % (rews, steps/float(ntrials)))
+
+        num = input("Enter the number of the experiment: ")
+        df = pd.DataFrame(self.fit)
+        df.to_csv(f'sss_ne_{num}_fit.csv', index=False)
 
         return rews, steps

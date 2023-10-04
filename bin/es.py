@@ -22,7 +22,7 @@ import subprocess
 import stat
 
 environment = None  # the problem
-algoname = "CMA-ES-NE"  # evolutionary algorithm
+algoname = "CMA-ES"  # evolutionary algorithm
 
 # Parse the [ADAPT] section of the configuration file
 def parseConfigFile(filename):
@@ -287,11 +287,11 @@ def main(argv):
     elif algoname == "std-ES":
         from std_es import Algo
     elif algoname == "CMA-ES":
-        from cma_es import Algo
+        from cma_es2 import Algo # TEMPORARY
     elif algoname == "CMA-ES-NE":
         from cma_esne import Algo
     elif algoname == "NES":
-        from nes import Algo
+        from nes2 import Algo # TEMPORARY
 
     algo = Algo(env, policy, args.seed, args.fileini, args.folder)
 

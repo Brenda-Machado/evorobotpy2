@@ -109,6 +109,7 @@ class Algo(EvoAlgo):
         self.m = zeros(self.nparams)  # Adam: momentum vector
         self.v = zeros(self.nparams)  # Adam: second momentum vector (adam)
         self.epsilon = 1e-08  # Adam: To avoid numerical issues with division by zero...
+        self.avecenter = 0
         self.alpha = 0.2 # NES: learning rate
         self.beta1 = 0.9  # Adam: beta1
         self.beta2 = 0.999  # Adam: beta2
@@ -149,7 +150,7 @@ class Algo(EvoAlgo):
         fp.close()
 
     def evaluate(self, candidate):
-        
+
         self.policy.set_trainable_flat(candidate)
         self.policy.nn.normphase(
             0
@@ -161,6 +162,8 @@ class Algo(EvoAlgo):
         self.steps += eval_length
         if eval_rews > self.bestestfit[0]:
             self.bestestfit = (eval_rews, candidate)
+        
+        print("eval_rews: ", eval_rews)
 
         self.fitness_eval.append(eval_rews)
 
@@ -176,11 +179,7 @@ class Algo(EvoAlgo):
             )  # store performance across generations
         
         self.updateBest(self.bestestfit[0], self.bestestfit[1])
-            
-        return (eval_rews)    
-    
-    def pos_evaluate(self):
-        
+
         self.avgfit = np.average(self.fitness_eval)  # compute the average fitness
 
         # postevaluate best sample of the last generation
@@ -206,6 +205,8 @@ class Algo(EvoAlgo):
                 self.steps += eval_length
             gfit /= self.policy.nttrials
             self.updateBestg(gfit, self.bestsol)
+            
+        return (eval_rews)    
 
     def run(self):
 
@@ -242,8 +243,6 @@ class Algo(EvoAlgo):
 
             for i in pop:
                 self.fitnesses.append(self.evaluate(i))
-
-            self.pos_evaluate()
 
             self.fitnesses = torch.tensor(self.fitnesses , requires_grad=True)
 
