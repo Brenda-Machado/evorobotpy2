@@ -256,11 +256,12 @@ class Algo(EvoAlgo):
             # with torch.no_grad():
             #     self.mu += self.alpha * self.mu.grad
             #     self.mu.grad.zero_()
+            # self.center = self.mu.detach().numpy()
 
             mu = self.center
             amat = np.zeros((self.nparams, self.nparams))
             xnes = XNES(self.evaluate, mu, amat, npop = self.batchSize, use_adasam=False)
-            xnes.step(1000)
+            xnes.step(1)
             self.pos_evaluate()
             print(xnes.mu_best)
             

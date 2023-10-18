@@ -152,6 +152,34 @@ class Algo(EvoAlgo):
             )  # store performance across generations
             
         return (1000 - eval_rews)
+    
+    def pos_evaluate(self):
+        
+        self.avgfit = np.average(self.fitness_eval)  # compute the average fitness
+
+        # postevaluate best sample of the last generation
+        # in openaiesp.py this is done the next generation, move this section before the section "evaluate samples" to produce identical results
+        gfit = 0
+        if self.bestsol is not None:
+            self.policy.set_trainable_flat(self.bestsol)
+            self.tnormepisodes += self.inormepisodes
+            for t in range(self.policy.nttrials):
+                if (
+                    self.policy.normalize == 1
+                    and self.normepisodes < self.tnormepisodes
+                ):
+                    self.policy.nn.normphase(1)
+                    self.normepisodes += 1  # we collect normalization data
+                    self.normalizationdatacollected = True
+                else:
+                    self.policy.nn.normphase(0)
+                eval_rews, eval_length = self.policy.rollout(
+                    1, seed=(self.seed + 100000 + t)
+                )
+                gfit += eval_rews
+                self.steps += eval_length
+            gfit /= self.policy.nttrials
+            self.updateBestg(gfit, self.bestsol)
 
     def run(self):
 
@@ -177,7 +205,11 @@ class Algo(EvoAlgo):
 
             self.cma_es.optimize(self.evaluate, maxfun=50)
 
+            self.center = self.cma_es.result.xbest
+
             self.updateBest(self.bestestfit[0], self.bestestfit[1])  # Stored if it is the best obtained so far
+
+            self.pos_evaluate()
 
             if (time.time() - last_save_time) > (self.saveeach * 60):
                 self.savedata()  # save data on files

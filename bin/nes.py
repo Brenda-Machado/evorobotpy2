@@ -253,6 +253,7 @@ class Algo(EvoAlgo):
             with torch.no_grad():
                 self.mu += self.alpha * self.mu.grad
                 self.mu.grad.zero_()
+            self.center = self.mu.detach().numpy()
             
             self.stat = np.append(
                 self.stat,
