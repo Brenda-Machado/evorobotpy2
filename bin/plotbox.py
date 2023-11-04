@@ -57,7 +57,7 @@ if averagen > 0:
     name = cpath
     name = name.split("/")
     dname = name[len(name) - 2]
-    ax = sns.boxplot(data = df, palette="vlag", hue_order = ["OpenAI-ES", "OpenAI-ES-NE", "SSS", "SSS-NE"], order = ["OpenAI-ES", "OpenAI-ES-NE", "SSS", "SSS-NE"])
+    ax = sns.boxplot(data = df, palette="vlag", hue_order = ["OpenAI-ES", "OpenAI-ES-NE", "SSS", "SSS-NE", "CMA-ES"], order = ["OpenAI-ES", "OpenAI-ES-NE", "SSS", "SSS-NE", "CMA-ES"])
     ax.set(xlabel = "Algoritmo",ylabel= "Fitness generalizada", title = dname)
     plt.savefig("mygraph.png")
     plt.show() 

@@ -139,15 +139,17 @@ class Algo(EvoAlgo):
 
             # Evaluate the population
             for i in range(self.popsize):
-                self.policy.set_trainable_flat(pop[i])  # set policy parameters
-                eval_rews, eval_length = self.policy.rollout(
+                for j in range(2):
+                    self.policy.set_trainable_flat(pop[i])  # set policy parameters
+                    eval_rews, eval_length = self.policy.rollout(
                     self.policy.ntrials
-                )  # evaluate the individual
-                fitness[i] = eval_rews  # store fitness
-                ceval += eval_length  # Update the number of evaluations
-                self.updateBest(
-                    fitness[i], pop[i]
-                )  # Update data if the current offspring is better than current best
+                    )  # evaluate the individual
+                    if fitness[i] <= eval_rews:
+                        fitness[i] = eval_rews  # store fitness
+                    ceval += eval_length  # Update the number of evaluations
+                    self.updateBest(
+                        fitness[i], pop[i]
+                    )  # Update data if the current offspring is better than current best
 
             fitness, index = descendent_sort(
                 fitness

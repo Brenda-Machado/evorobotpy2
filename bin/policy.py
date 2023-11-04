@@ -530,6 +530,6 @@ class ErPolicy(Policy):
 
         num = input("Enter the number of the experiment: ")
         df = pd.DataFrame(self.fit)
-        df.to_csv(f'sss_ne_{num}_fit.csv', index=False)
+        df.to_csv(f'cma_es_{num}_fit.csv', index=False)
 
         return rews, steps
