@@ -235,13 +235,10 @@ class GymPolicy(Policy):
         self.ninputs = env.observation_space.shape[0]      # only works for problems with continuous observation space
         self.noutputs = env.action_space.shape[0]          # only works for problems with continuous action space
         Policy.__init__(self, env, filename, seed, test)
-        self.set_conditions = []
 
     def rollout(self, ntrials, render=False, seed=None):   # evaluate the policy for one or more episodes 
         rews = 0.0                    # summed rewards
         steps = 0                     # step performed
-        self.set_conditions.append(-np.pi)
-        self.set_conditions.append(np.pi)
         if (self.test == 2):          # if the policy is used to test a trained agent and to visualize the neurons, we need initialize the graphic render  
             import renderWorld
             self.objs = np.arange(10, dtype=np.float64)   
