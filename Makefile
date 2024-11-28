@@ -25,6 +25,10 @@ lint:
 update_requirements:
 	pip freeze | sed "s/==.*//g" > requirements.txt
 
+create_alias:
+	bash scripts/alias.sh
+	$(source ~/.bash_aliases)
+
 compile_erdiscrim:
 	$(call remove_build_dir)
 	$(call remove_files,"ErDiscrim")

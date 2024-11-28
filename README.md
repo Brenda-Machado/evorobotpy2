@@ -15,13 +15,6 @@ Then install the requirements:
 pip install -r requirements.txt
 ```
 
-To make things easier you can create an alias to run the simulator:
-```
-make create_alias
-```
-
-And now we are good to go!
-
 ## Compiling
 
 Before running the models, you need to compile the resources that you'll use.

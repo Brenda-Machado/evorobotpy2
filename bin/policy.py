@@ -234,11 +234,14 @@ class GymPolicy(Policy):
     def __init__(self, env, filename, seed, test):
         self.ninputs = env.observation_space.shape[0]      # only works for problems with continuous observation space
         self.noutputs = env.action_space.shape[0]          # only works for problems with continuous action space
+        self.state_reward = {}
         Policy.__init__(self, env, filename, seed, test)
 
     def rollout(self, ntrials, render=False, seed=None):   # evaluate the policy for one or more episodes 
         rews = 0.0                    # summed rewards
         steps = 0                     # step performed
+        best_rew = 0.0
+        
         if (self.test == 2):          # if the policy is used to test a trained agent and to visualize the neurons, we need initialize the graphic render  
             import renderWorld
             self.objs = np.arange(10, dtype=np.float64)   
@@ -250,12 +253,19 @@ class GymPolicy(Policy):
             self.ob = self.env.reset()   # reset the environment at the beginning of a new episode
             self.nn.resetNet()           # reset the activation of the neurons (necessary for recurrent policies)
             rew = 0.0
+            best_rew = -999
             t = 0
             while t < self.maxsteps:
                 self.nn.copyInput(np.float32(self.ob))        # copy the pointer to the observation vector to evonet and convert from float64 to float32
                 self.nn.updateNet()                           # update the activation of the policy
                 self.ob, r, done, _ = self.env.step(self.ac)  # perform a simulation step
+                if t == 0:
+                    x, y = self.ob[0], self.ob[1]
+                    state = (float(x),float(y))
+                    self.state_reward[state] = float(r)
                 rew += r
+                if r > best_rew:
+                    best_rew = r
                 t += 1
                 if (self.test > 0):
                     if (self.test == 1):
@@ -265,6 +275,7 @@ class GymPolicy(Policy):
                         info = 'Trial %d Step %d Fit %.2f %.2f' % (trial, t, r, rew)
                         renderWorld.update(self.objs, info, self.ob, self.ac, self.nact)
                 if done:
+                    np.save('state_reward_exp_1', self.state_reward)
                     break
             if (self.test > 0):
                 print("Trial %d Fit %.2f Steps %d " % (trial, rew, t))
@@ -273,7 +284,8 @@ class GymPolicy(Policy):
         rews /= ntrials               # Normalize reward by the number of trials
         if (self.test > 0 and ntrials > 1):
             print("Average Fit %.2f Steps %.2f " % (rews, steps/float(ntrials)))
-        return rews, steps
+        np.save('state_reward_exp_1.npy', self.state_reward)
+        return best_rew, steps
 
 # GymDiscr policies use float64 observation and action vectors (evonet use float32) and use discrete action vectors
 # create a new observation vector each step, consequently we need to pass the pointer to evonet each step 
@@ -304,6 +316,7 @@ class GymPolicyDiscr(Policy):
                 self.nn.updateNet()                         # update the activation of the policy
                 action = np.argmax(self.ac)                 # select the action that corresponds to the most activated output neuron
                 self.ob, r, done, _ = self.env.step(action) # perform a simulation step
+                print(f'state: {self.ob}, action: {action}, reward: {r}')
                 rew += r
                 t += 1
                 if render:

@@ -5,7 +5,7 @@ cloudpickle>=2.0.0
 cycler>=0.11.0
 Cython==3.0.0a10
 fonttools>=4.29.1
-gym>=0.21.0
+gym==0.22.0
 horology>=1.2.0
 Jinja2>=3.0.3
 jinja2-time>=0.2.0
@@ -23,6 +23,7 @@ Pillow>=9.0.1
 platformdirs>=2.4.1
 pybullet>=3.2.1
 pyglet==1.5.21
+pygame
 PyOpenGL==3.1.5
 pyparsing>=3.0.7
 python-dateutil>=2.8.2

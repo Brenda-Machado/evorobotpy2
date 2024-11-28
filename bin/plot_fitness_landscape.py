@@ -1,75 +1,45 @@
-
-"""
-   This file belong to https://github.com/Brenda-Machado/evorobotpy
-   and has been written by Brenda Silva Machado, brenda.silva.machado@grad.ufsc.br
-
-   plot_fitness_landscape.py 
-
-"""
-
-import matplotlib.pyplot as plt
-import pandas as pd
 import numpy as np
-import sys
-import os
-
-from matplotlib import cm
+import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from scipy.interpolate import griddata
 
-plt.style.use('_mpl-gallery')
+# Carregar o dicionário do arquivo .npy
+dados = np.load('state_reward_exp_1.npy', allow_pickle=True).item()
 
-# Função principal para plotar os dados
-def plot_data():
-    if len(sys.argv) == 1:
-        cpath = os.getcwd()
-        files = os.listdir(cpath)
-        print("Plotting data contained in:")
-        
-        all_stats = []
-        count = 0
-        
-        for f in files:
-            if f.endswith(".npy"):
-                print(f)
-                stat = np.load(f)
-                size = np.shape(stat)
-                newsize = (int(size[0] / 6), 6)
-                stat = np.resize(stat, newsize)
-                stat = np.transpose(stat)
+# Extrair as coordenadas (x, y) e os valores de fitness
+coordenadas = list(dados.keys())
+fitness = list(dados.values())
 
-                if count == 0:
-                    shape = stat.shape
-                    summed_stat = np.zeros(shape)
-                    
-                summed_stat += stat
-                count += 1
+# Converter as coordenadas (x, y) para arrays separados
+x_vals = np.array([coord[0] for coord in coordenadas])
+y_vals = np.array([coord[1] for coord in coordenadas])
 
-        if count == 0:
-            print("\033[1mERROR: No stat*.npy file found\033[0m")
-            return
-        
-        # Calcula a média dos dados
-        avg_stat = summed_stat / count
-        print(avg_stat)
-        
-        # Prepare os dados para o gráfico 3D
-        X = avg_stat[1]
-        Y = avg_stat[1]
-        X, Y = np.meshgrid(X, Y)
-        R = np.sqrt(X**2 + Y**2)
-        Z = np.sin(R)
+# Verificar se há valores NaN ou infinitos nos dados de fitness
+fitness = np.array(fitness)
 
-        # Criação do gráfico de superfície
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-        ax.plot_surface(X, Y, Z, vmin=Z.min() * 2, cmap=cm.Blues)
-        
-        # Adiciona título e rótulos aos eixos
-        ax.set_title('Fitness Landscape')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        
-        plt.show()
+# Definir uma grade regular para interpolação
+x_grid = np.linspace(np.min(x_vals), np.max(x_vals), len(x_vals))
+y_grid = np.linspace(np.min(y_vals), np.max(y_vals), len(y_vals))
+x_grid, y_grid = np.meshgrid(x_grid, y_grid)
 
-if __name__ == "__main__":
-    plot_data()
+# Interpolação dos valores de fitness para preencher a grade usando o método 'linear'
+fitness_grid = griddata((x_vals, y_vals), fitness, (x_grid, y_grid), method='linear')
+
+# Criar o gráfico 3D
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+
+# Plotar a superfície 3D com a grade interpolada
+surf = ax.plot_surface(x_grid, y_grid, fitness_grid, cmap='Blues', edgecolor='none')
+
+# Adicionar título e rótulos aos eixos
+ax.set_title("Fitness Landscape")
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+ax.set_zlabel("Fitness")
+
+# Limite máximo igual a 0 para o eixo Z
+# ax.set_zlim(np.min(fitness), 0)
+
+# Mostrar o gráfico
+plt.show()

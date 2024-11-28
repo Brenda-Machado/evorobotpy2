@@ -1,95 +1,42 @@
 import numpy as np
-import os
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
+from scipy.interpolate import griddata
 
-# Função para carregar todos os arquivos npy de uma pasta
-def carregar_arquivos_stat(pasta):
-    arquivos_stat = [os.path.join(pasta, f) for f in os.listdir(pasta) if f.endswith('.npy')]
-    dados = [np.load(arq).reshape(-1, 6) for arq in arquivos_stat]
-    return dados
+# Carregar o dicionário do arquivo .npy
+dados = np.load('state_reward_exp_1.npy', allow_pickle=True).item()
 
-# Função para truncar ou preencher os dados para que todos tenham o mesmo tamanho
-def ajustar_dados(dados):
-    # Encontrar o menor número de linhas entre os arquivos
-    tamanho_minimo = min([d.shape[0] for d in dados])
-    
-    # Truncar ou ajustar todos os arquivos para o tamanho mínimo
-    dados_ajustados = [d[:tamanho_minimo, :] for d in dados]
-    return dados_ajustados
+# Extrair as coordenadas (x, y) e os valores de fitness
+coordenadas = list(dados.keys())
+fitness = list(dados.values())
 
-# Função para calcular a média dos dados de múltiplos arquivos
-def calcular_media_dados(dados):
-    dados_empilhados = np.stack(dados, axis=0)
-    media_dados = np.mean(dados_empilhados, axis=0)
-    return media_dados
+# Converter as coordenadas (x, y) para arrays separados
+x_vals = np.array([coord[0] for coord in coordenadas])
+y_vals = np.array([coord[1] for coord in coordenadas])
 
-# Função para gerar a paisagem de fitness
-def gerar_paisagem_fitness(media_dados):
-    # Separando os dados correspondentes
-    avgfit = media_dados[:, 4]  # Eixo Z
-    center = media_dados[:, 5]  # Eixo X
-    print(center)
+# Definir uma grade regular para interpolação
+x_grid = np.linspace(np.min(x_vals), np.max(x_vals), 100)
+y_grid = np.linspace(np.min(y_vals), np.max(y_vals), 100)
+x_grid, y_grid = np.meshgrid(x_grid, y_grid)
 
-    gerar_histograma_2d(center, avgfit)
-    
-    n_points = int(np.sqrt(len(center)))  # Definir o número de pontos para a malha
+# Interpolação dos valores de fitness para preencher a grade
+fitness_grid = griddata((x_vals, y_vals), fitness, (x_grid, y_grid), method='cubic')
 
-    # # Redimensionar steps e bfit para formar uma malha compatível
-    center_reshaped = center[:n_points**2].reshape(n_points, n_points)
-    print(center_reshaped)
-    avgfit = avgfit[:n_points**2].reshape(n_points, n_points)
+# Criar o gráfico 3D
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
 
-    X, Y = np.meshgrid(center_reshaped[0], center_reshaped[0])
+# Plotar a superfície 3D com a grade interpolada
+surf = ax.plot_surface(x_grid, y_grid, fitness_grid, cmap='Blues', edgecolor='none')
 
-    # Plotando o gráfico
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
+# Adicionar título e rótulos aos eixos
+ax.set_title("Fitness Landscape")
+ax.set_xlabel("X")
+ax.set_ylabel("Y")
+ax.set_zlabel("Fitness")
 
-    # Superfície 3D com estilo e limites ajustados
-    ax.plot_surface(X, Y, avgfit, cmap='Blues', edgecolor='none')
+# Limite máximo igual a 0 para o eixo Z
+ax.set_zlim(np.min(fitness), 0)
 
-    # Rótulos dos eixos
-    ax.set_title('Fitness Landscape')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-
-    # ax.set_xlim(center.min(), center.max())
-    # ax.set_ylim(center.min(), center.max())
-    # ax.set_zlim(avgfit.min(), avgfit.max())
-
-    # Mostrando o gráfico
-    plt.show()
-
-# Função para gerar histogramas de center e avgfit
-def gerar_histograma_2d(center, avgfit):
-    plt.figure(figsize=(10, 6))
-    plt.hist2d(center, avgfit, bins=30, cmap='Blues', cmin=1)
-    plt.colorbar(label='Frequência')
-    
-    # Configurações do gráfico
-    plt.title('Histograma 2D de Center vs. Average Fitness')
-    plt.xlabel('Center')
-    plt.ylabel('Average Fitness')
-    plt.tight_layout()
-    plt.show()
-
-# Função principal para o pipeline completo
-def main(pasta_dados):
-    # Carregar dados de todos os arquivos na pasta
-    dados = carregar_arquivos_stat(pasta_dados)
-    
-    # Ajustar os dados para ter o mesmo tamanho
-    dados_ajustados = ajustar_dados(dados)
-    
-    # Calcular a média dos dados
-    media_dados = calcular_media_dados(dados_ajustados)
-    
-    # Gerar a paisagem de fitness
-    gerar_paisagem_fitness(media_dados)
-
-# Exemplo de uso
-# pasta_dados = 'episodes-5'
-pasta_dados = 'maxsteps-100'
-main(pasta_dados)
+# Mostrar o gráfico
+plt.show()
