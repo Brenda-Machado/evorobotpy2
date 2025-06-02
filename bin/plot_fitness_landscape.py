@@ -4,7 +4,7 @@ from mpl_toolkits.mplot3d import Axes3D
 from scipy.interpolate import griddata
 
 # Carregar o dicionário do arquivo .npy
-dados = np.load('state_reward_exp_1.npy', allow_pickle=True).item()
+dados = np.load('state_reward_exp_6_c07_01_02.npy', allow_pickle=True).item()
 
 # Extrair as coordenadas (x, y) e os valores de fitness
 coordenadas = list(dados.keys())

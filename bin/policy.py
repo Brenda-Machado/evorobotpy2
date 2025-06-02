@@ -240,7 +240,9 @@ class GymPolicy(Policy):
     def rollout(self, ntrials, render=False, seed=None):   # evaluate the policy for one or more episodes 
         rews = 0.0                    # summed rewards
         steps = 0                     # step performed
-        best_rew = 0.0
+        best_rew = -999.9
+        worst_rew = 0.0
+        components_wheights = [0, 1, 0]
         
         if (self.test == 2):          # if the policy is used to test a trained agent and to visualize the neurons, we need initialize the graphic render  
             import renderWorld
@@ -259,13 +261,14 @@ class GymPolicy(Policy):
                 self.nn.copyInput(np.float32(self.ob))        # copy the pointer to the observation vector to evonet and convert from float64 to float32
                 self.nn.updateNet()                           # update the activation of the policy
                 self.ob, r, done, _ = self.env.step(self.ac)  # perform a simulation step
-                if t == 0:
-                    x, y = self.ob[0], self.ob[1]
-                    state = (float(x),float(y))
-                    self.state_reward[state] = float(r)
+                x, y = self.ob[0], self.ob[1]
+                state = (float(x),float(y))
+                self.state_reward[state] = float(r)
                 rew += r
                 if r > best_rew:
                     best_rew = r
+                if r < worst_rew:
+                    worst_rew = r
                 t += 1
                 if (self.test > 0):
                     if (self.test == 1):
@@ -285,7 +288,8 @@ class GymPolicy(Policy):
         if (self.test > 0 and ntrials > 1):
             print("Average Fit %.2f Steps %.2f " % (rews, steps/float(ntrials)))
         np.save('state_reward_exp_1.npy', self.state_reward)
-        return best_rew, steps
+        rew_final = best_rew*components_wheights[0] + rews*components_wheights[1] + worst_rew*components_wheights[2]
+        return rew_final, steps
 
 # GymDiscr policies use float64 observation and action vectors (evonet use float32) and use discrete action vectors
 # create a new observation vector each step, consequently we need to pass the pointer to evonet each step 
